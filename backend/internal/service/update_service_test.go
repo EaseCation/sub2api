@@ -185,3 +185,63 @@ func TestUpdateServiceRollbackToVersionAcceptsVPrefix(t *testing.T) {
 	require.NotErrorIs(t, err, ErrRollbackVersionNotAllowed)
 	require.Contains(t, err.Error(), "no compatible release found")
 }
+
+type updateSourceClientStub struct {
+	updateServiceGitHubClientStub
+	calls       []string
+	forkErr     error
+	officialErr error
+}
+
+func (s *updateSourceClientStub) FetchLatestRelease(_ context.Context, repo string) (*GitHubRelease, error) {
+	s.calls = append(s.calls, repo)
+	if repo == "Wei-Shaw/sub2api" {
+		return &GitHubRelease{TagName: "v9.0.0", HTMLURL: "https://github.com/Wei-Shaw/sub2api/releases/tag/v9.0.0"}, s.officialErr
+	}
+	if repo != "JunxuanB/sub2api" {
+		panic("unexpected update repository")
+	}
+	return &GitHubRelease{TagName: "v0.2.8", Assets: []GitHubAsset{{Name: "checksums.txt", BrowserDownloadURL: "https://github.com/JunxuanB/sub2api/releases/download/v0.2.8/checksums.txt"}}}, s.forkErr
+}
+
+func TestUpdateServiceOfficialVersionIsDisplayOnly(t *testing.T) {
+	client := &updateSourceClientStub{}
+	svc := NewUpdateService(&updateServiceCacheStub{}, client, "0.2.8", "release")
+	info, err := svc.CheckUpdate(context.Background(), true)
+	require.NoError(t, err)
+	require.Equal(t, "JunxuanB/sub2api", info.Repository)
+	require.False(t, info.HasUpdate, "a newer official release must not offer an update")
+	require.Equal(t, "9.0.0", info.Official.Version)
+	require.Contains(t, info.ReleaseInfo.Assets[0].DownloadURL, "JunxuanB/sub2api/")
+	require.ErrorIs(t, svc.PerformUpdate(context.Background()), ErrNoUpdateAvailable)
+	client.calls = nil
+	cached, err := svc.CheckUpdate(context.Background(), false)
+	require.NoError(t, err)
+	require.True(t, cached.Cached)
+	require.Equal(t, info.Official, cached.Official)
+	require.Empty(t, client.calls)
+}
+
+func TestUpdateServiceRejectsLegacyOfficialCache(t *testing.T) {
+	cache := &updateServiceCacheStub{data: `{"latest":"9.0.0","timestamp":9999999999,"release_info":{"assets":[{"name":"checksums.txt","download_url":"https://github.com/Wei-Shaw/sub2api/checksums.txt"}]}}`}
+	client := &updateSourceClientStub{forkErr: errors.New("fork unavailable")}
+	svc := NewUpdateService(cache, client, "0.2.7", "release")
+	info, err := svc.CheckUpdate(context.Background(), false)
+	require.NoError(t, err)
+	require.False(t, info.HasUpdate)
+	require.Nil(t, info.ReleaseInfo)
+	require.Equal(t, "9.0.0", info.Official.Version)
+	require.Equal(t, "fork unavailable", info.Warning)
+	require.Equal(t, []string{"JunxuanB/sub2api", "Wei-Shaw/sub2api"}, client.calls)
+}
+
+func TestUpdateServiceOfficialFailureDoesNotBlockFork(t *testing.T) {
+	client := &updateSourceClientStub{officialErr: errors.New("upstream unavailable")}
+	svc := NewUpdateService(&updateServiceCacheStub{}, client, "0.2.7", "release")
+	info, err := svc.CheckUpdate(context.Background(), true)
+	require.NoError(t, err)
+	require.True(t, info.HasUpdate)
+	require.Equal(t, "0.2.8", info.LatestVersion)
+	require.Equal(t, "upstream unavailable", info.Official.Warning)
+	require.Empty(t, info.Warning)
+}

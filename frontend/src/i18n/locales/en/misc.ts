@@ -19,6 +19,10 @@ export default {
 
   // Version Badge
   version: {
+    updateSource: 'Update source',
+    officialVersion: 'Latest official version',
+    officialReadOnly: 'For reference only. Updates and rollbacks always use JunxuanB/sub2api.',
+    checkFailed: 'Version check unavailable',
     currentVersion: 'Current Version',
     latestVersion: 'Latest Version',
     upToDate: "You're running the latest version.",
@@ -55,6 +59,7 @@ export default {
     rollbackSourceHint: 'Online rollback is not available for source builds',
     deployScript: 'Script',
     deployDocker: 'Docker',
+    dockerUpdateHint: 'Change the image in your existing Compose file, then pull and recreate the app container. Add -f for a custom filename.',
     dockerEditCompose: 'Edit the image tag in docker-compose.yml',
     dockerRecreate: 'Recreate the container'
   },

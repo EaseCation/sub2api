@@ -89,7 +89,7 @@
                   <span v-else class="text-2xl font-bold text-gray-400 dark:text-dark-500">--</span>
                   <!-- Show check mark when up to date -->
                   <span
-                    v-if="!hasUpdate"
+                    v-if="!hasUpdate && !appStore.versionWarning"
                     class="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
                   >
                     <svg
@@ -107,11 +107,29 @@
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-dark-400">
                   {{
-                    hasUpdate
+                    appStore.versionWarning
+                      ? t('version.checkFailed')
+                      : hasUpdate
                       ? t('version.latestVersion') + ': v' + latestVersion
                       : t('version.upToDate')
                   }}
                 </p>
+              </div>
+
+              <div class="mb-4 space-y-2 rounded-lg bg-gray-50 p-3 text-xs dark:bg-dark-900">
+                <p class="break-words text-gray-600 dark:text-dark-300">
+                  {{ t('version.updateSource') }}: JunxuanB/sub2api
+                </p>
+                <div data-test="official-version" class="border-t border-gray-200 pt-2 dark:border-dark-700">
+                  <span class="text-gray-600 dark:text-dark-300">{{ t('version.officialVersion') }}: </span>
+                  <a v-if="appStore.officialVersion?.version"
+                    href="https://github.com/Wei-Shaw/sub2api/releases/latest"
+                    target="_blank" rel="noopener noreferrer" class="text-primary-500 hover:underline">
+                    v{{ appStore.officialVersion.version }}
+                  </a>
+                  <span v-else class="text-gray-400">{{ t('version.checkFailed') }}</span>
+                  <p class="mt-1 text-gray-500 dark:text-dark-400">{{ t('version.officialReadOnly') }}</p>
+                </div>
               </div>
 
               <!-- Priority 1: Update error (must check before hasUpdate) -->
@@ -341,6 +359,12 @@
                   <Icon v-else name="download" size="sm" :stroke-width="2" />
                   {{ updating ? t('version.updating') : t('version.updateNow') }}
                 </button>
+
+                <details class="rounded-lg bg-gray-50 p-3 text-xs dark:bg-dark-900">
+                  <summary class="cursor-pointer text-gray-600 dark:text-dark-300">{{ t('version.deployDocker') }}</summary>
+                  <p class="mt-2 text-gray-500 dark:text-dark-400">{{ t('version.dockerUpdateHint') }}</p>
+                  <pre class="mt-2 overflow-x-auto whitespace-pre-wrap break-all text-gray-700 dark:text-dark-200">{{ dockerUpdateCommand }}</pre>
+                </details>
 
                 <!-- View release link -->
                 <a
@@ -651,9 +675,9 @@ import {
 import { useClipboard } from '@/composables/useClipboard'
 import Icon from '@/components/icons/Icon.vue'
 
-const GITHUB_REPO = 'Wei-Shaw/sub2api'
-// Docker Hub image published by CI (tags carry no "v" prefix, e.g. weishaw/sub2api:0.1.146)
-const DOCKER_IMAGE = 'weishaw/sub2api'
+const GITHUB_REPO = 'JunxuanB/sub2api'
+// Docker Hub image published by CI (tags carry no "v" prefix, e.g. junxuanb/sub2api:0.1.146)
+const DOCKER_IMAGE = 'junxuanb/sub2api'
 
 const { t } = useI18n()
 
@@ -712,6 +736,13 @@ const scriptRollbackCommand = computed(() => {
   const tag = `v${selectedRollbackVersion.value}`
   return `curl -sSL https://raw.githubusercontent.com/${GITHUB_REPO}/${tag}/deploy/install.sh | sudo bash -s -- rollback ${tag}`
 })
+
+const dockerUpdateCommand = computed(() => [
+  `image: ${DOCKER_IMAGE}:${latestVersion.value}`,
+  '',
+  'docker compose pull sub2api',
+  'docker compose up -d --no-deps sub2api'
+].join('\n'))
 
 const dockerRollbackCommand = computed(() => {
   if (!selectedRollbackVersion.value) return ''

@@ -11,7 +11,15 @@ export interface ReleaseInfo {
   html_url: string
 }
 
+export interface OfficialVersionInfo {
+  version?: string
+  html_url?: string
+  warning?: string
+}
+
 export interface VersionInfo {
+  repository?: string
+  official?: OfficialVersionInfo
   current_version: string
   latest_version: string
   has_update: boolean

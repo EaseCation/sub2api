@@ -19,6 +19,10 @@ export default {
 
   // Version Badge
   version: {
+    updateSource: '更新来源',
+    officialVersion: '官方最新版本',
+    officialReadOnly: '仅供参考，更新与回退始终使用 JunxuanB/sub2api。',
+    checkFailed: '暂时无法检查版本',
     currentVersion: '当前版本',
     latestVersion: '最新版本',
     upToDate: '已是最新版本',
@@ -54,6 +58,7 @@ export default {
     rollbackSourceHint: '源码构建不支持在线回退',
     deployScript: '脚本部署',
     deployDocker: 'Docker',
+    dockerUpdateHint: '先修改现有 Compose 的镜像版本，再拉取并重建应用容器；使用自定义文件名时请添加 -f。',
     dockerEditCompose: '修改 docker-compose.yml 中的镜像版本',
     dockerRecreate: '重新创建容器'
   },
