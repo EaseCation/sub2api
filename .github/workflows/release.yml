@@ -1,13 +1,11 @@
 name: Release
 
+# Releases are intentionally manual; pushing code or tags does not publish images.
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release (or a branch/ref for dry run)'
+        description: 'Existing version tag to publish (e.g. v1.0.0; branch/ref only for dry run)'
         required: true
         type: string
       simple_release:
