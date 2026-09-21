@@ -48,7 +48,12 @@ func RegisterGatewayRoutes(
 	if cfg != nil {
 		guardConfig = cfg.Gateway.OpenAIAccountAvailabilityGuard
 	}
-	openAIAccountAvailabilityGuard := middleware.NewOpenAIAccountAvailabilityGuard(h.Gateway, guardConfig).Middleware()
+	guard := service.NewOpenAIAccountGuard(h.Gateway, guardConfig, nil)
+	if settingService != nil {
+		guard = settingService.OpenAIAccountGuard()
+		guard.SetChecker(h.Gateway)
+	}
+	openAIAccountAvailabilityGuard := middleware.OpenAIAccountGuardMiddleware(guard)
 
 	isOpenAIResponsesCompatibleGatewayPlatform := func(c *gin.Context) bool {
 		switch getGroupPlatform(c) {
@@ -373,7 +378,7 @@ func RegisterGatewayRoutes(
 	// 根路径别名共用中间件链：白名单准入在 apiKeyAuth 之后、compositeTarget
 	// 之前，避免逐条路由手工维护链导致漏挂。
 	rootRoute := func(method, path string, limit gin.HandlerFunc, handler gin.HandlerFunc) {
-		if guardConfig.Enabled {
+		if guardConfig.Enabled || settingService != nil {
 			originalHandler := handler
 			handler = func(c *gin.Context) {
 				openAIAccountAvailabilityGuard(c)

@@ -1,5 +1,24 @@
 export default {
     settings: {
+        openaiAccountGuard: {
+          title: 'OpenAI account availability guard',
+          description: 'Pause gateway APIs on all platforms, except exempt endpoints, when usable OpenAI accounts fall below the threshold. Show a notice to all users. Other platforms, limited, errored and unschedulable accounts are excluded.',
+          enabled: 'Enable availability guard',
+          threshold: 'Minimum available accounts',
+          interval: 'Account count cache interval (seconds)',
+          cacheHint: 'Disabled by default; default threshold: 2, cache: 30 seconds. The threshold itself remains available. Recovery unlocks automatically; requests already in progress continue. No restart needed. Other replicas and the website notice may take about 30 seconds to update.',
+          message: 'Lock notice',
+          exemptions: 'Advanced: APIs available while locked',
+          exemptionsHint: 'One path per line, optionally prefixed by an HTTP method (e.g. GET /v1/models). A trailing * matches a prefix. Keep only essential endpoints. Administration, sign-in and service status remain available.',
+          loadFailed: 'Unable to load guard settings. Please retry.',
+          saveFailed: 'Unable to save. Check your input and connection, then retry.',
+          invalid: 'Use an integer threshold from 1–100000, an integer cache interval from 1–3600 seconds, and a non-empty notice.',
+          loading: 'Loading settings…',
+          retry: 'Retry',
+          save: 'Save guard settings',
+          saving: 'Saving…',
+          saved: 'Guard settings saved. No restart required.'
+      },
       title: 'System Settings',
       description: 'Manage registration, email verification, default values, and SMTP settings',
       tabs: {

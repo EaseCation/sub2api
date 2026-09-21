@@ -559,6 +559,8 @@ func registerPromoCodeRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 func registerSettingsRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	adminSettings := admin.Group("/settings")
 	{
+		adminSettings.GET("/openai-account-guard", h.Admin.Setting.GetOpenAIAccountGuardSettings)
+		adminSettings.PUT("/openai-account-guard", h.Admin.Setting.UpdateOpenAIAccountGuardSettings)
 		adminSettings.GET("", h.Admin.Setting.GetSettings)
 		adminSettings.PUT("", h.Admin.Setting.UpdateSettings)
 		adminSettings.POST("/test-smtp", h.Admin.Setting.TestSMTPConnection)

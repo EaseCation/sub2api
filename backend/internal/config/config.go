@@ -1108,11 +1108,11 @@ type GatewayConfig struct {
 // routing, so inactive, rate-limited, quota-limited, expired and errored
 // accounts are excluded.
 type OpenAIAccountAvailabilityGuardConfig struct {
-	Enabled              bool     `mapstructure:"enabled"`
-	MinAvailableAccounts int      `mapstructure:"min_available_accounts"`
-	CheckIntervalSeconds int      `mapstructure:"check_interval_seconds"`
-	Message              string   `mapstructure:"message"`
-	ExemptPaths          []string `mapstructure:"exempt_paths"`
+	Enabled              bool     `mapstructure:"enabled" json:"enabled"`
+	MinAvailableAccounts int      `mapstructure:"min_available_accounts" json:"min_available_accounts"`
+	CheckIntervalSeconds int      `mapstructure:"check_interval_seconds" json:"check_interval_seconds"`
+	Message              string   `mapstructure:"message" json:"message"`
+	ExemptPaths          []string `mapstructure:"exempt_paths" json:"exempt_paths"`
 }
 
 // GatewayGrokConfig holds Grok-specific gateway scheduling knobs.

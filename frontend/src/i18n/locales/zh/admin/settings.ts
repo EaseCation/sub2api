@@ -1,5 +1,24 @@
 export default {
     settings: {
+        openaiAccountGuard: {
+          title: 'OpenAI 账号低容量保护',
+          description: '可用 OpenAI 账号少于阈值时，暂停所有平台的网关 API（豁免接口除外），并向所有用户展示提示。不计入其他平台、限额中、错误或停调账号。',
+          enabled: '启用低容量保护',
+          threshold: '最少可用账号数',
+          interval: '账号数量缓存间隔（秒）',
+          cacheHint: '默认关闭，阈值默认 2，缓存默认 30 秒。恰好达到阈值时不锁定；恢复后自动解锁，已开始的请求继续完成。保存无需重启，多实例配置同步和网页提示最多约延迟 30 秒。',
+          message: '锁定提示文案',
+          exemptions: '高级：锁定期间保留的 API',
+          exemptionsHint: '每行一个路径，可加 HTTP 方法（例如 GET /v1/models），末尾 * 表示前缀匹配。仅保留必要接口；后台管理、登录和服务状态查询始终可用。',
+          loadFailed: '加载保护设置失败，请重试。',
+          saveFailed: '保存失败，请检查输入和网络后重试。',
+          invalid: '账号阈值需为 1–100000 的整数，缓存间隔需为 1–3600 秒的整数，提示文案不能为空。',
+          loading: '正在加载设置…',
+          retry: '重试',
+          save: '保存保护设置',
+          saving: '正在保存…',
+          saved: '保护设置已保存，无需重启'
+      },
       title: '系统设置',
       description: '管理注册、邮箱验证、默认值和 SMTP 设置',
       tabs: {

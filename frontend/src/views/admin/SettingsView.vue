@@ -203,6 +203,7 @@
 
         <!-- Tab: Gateway -->
         <div v-show="activeTab === 'gateway'" class="space-y-6">
+          <OpenAIAccountGuardSettings v-if="activeTab === 'gateway'" />
           <!-- Overload Cooldown (529) Settings -->
           <div class="card">
             <div
@@ -8818,6 +8819,7 @@
 </template>
 
 <script setup lang="ts">
+import OpenAIAccountGuardSettings from "./settings/OpenAIAccountGuardSettings.vue";
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { adminAPI } from "@/api";

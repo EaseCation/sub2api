@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView, useRouter, useRoute } from 'vue-router'
 import { computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import OpenAIAccountGuardBanner from '@/components/common/OpenAIAccountGuardBanner.vue'
 import Toast from '@/components/common/Toast.vue'
 import NavigationProgress from '@/components/common/NavigationProgress.vue'
 import AdminComplianceDialog from '@/components/admin/AdminComplianceDialog.vue'
@@ -165,6 +166,7 @@ onMounted(async () => {
   <NavigationProgress />
   <RouterView />
   <Toast />
+  <OpenAIAccountGuardBanner />
   <AnnouncementPopup />
   <AdminComplianceDialog />
 </template>

@@ -158,3 +158,9 @@ func publicLoginAgreementDocumentsToDTO(items []service.LoginAgreementDocument) 
 	}
 	return result
 }
+
+// GetOpenAIAccountGuardStatus exposes only the user-facing lock state, never account counts.
+func (h *SettingHandler) GetOpenAIAccountGuardStatus(c *gin.Context) {
+	c.Header("Cache-Control", "no-store")
+	response.Success(c, h.settingService.OpenAIAccountGuard().Status(c.Request.Context()))
+}
