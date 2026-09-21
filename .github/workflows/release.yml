@@ -248,8 +248,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ env.GHCR_IMAGE_OWNER }}
+          password: ${{ secrets.GHCR_TOKEN }}
       - name: Build images and publish manifests
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME || 'skip' }}
