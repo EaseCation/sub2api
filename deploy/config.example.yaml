@@ -227,6 +227,24 @@ gateway:
   openai_first_output_timeout_seconds: 0
   # Optional high/xhigh/max override (seconds, 0=use the standard timeout)
   openai_high_effort_first_output_timeout_seconds: 0
+  # When enabled, lock gateway traffic while fewer than the configured number
+  # of schedulable OpenAI accounts remain. The count excludes inactive,
+  # quota/rate-limited, expired, temporary-blocked and errored accounts.
+  # 启用后，可调度的 OpenAI 账号少于阈值时锁定网关；默认关闭，阈值默认 2。
+  openai_account_availability_guard:
+    enabled: false
+    min_available_accounts: 2
+    # Cached count refresh interval. Concurrent requests share one refresh.
+    check_interval_seconds: 30
+    message: "当前服务暂时不可用：可用的 OpenAI 账号数量少于系统要求，请稍后再试。"
+    # These paths remain available while locked. Prefix '*' is supported.
+    exempt_paths:
+      - "GET /v1/models"
+      - "GET /models"
+      - "GET /v1/usage"
+      - "GET /usage"
+      - "GET /v1/images/tasks/*"
+      - "GET /images/tasks/*"
   # Max request body size in bytes (default: 256MB)
   # 请求体最大字节数（默认 256MB）
   max_body_size: 268435456

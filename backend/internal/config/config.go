@@ -1012,6 +1012,8 @@ type GatewayConfig struct {
 	OpenAIScheduler GatewayOpenAISchedulerConfig `mapstructure:"openai_scheduler"`
 	// OpenAIHTTP2: OpenAI HTTP 上游协议策略（默认启用 HTTP/2，可按代理能力回退 HTTP/1.1）
 	OpenAIHTTP2 GatewayOpenAIHTTP2Config `mapstructure:"openai_http2"`
+	// OpenAIAccountAvailabilityGuard 在可用 OpenAI 账号过少时临时锁住网关。
+	OpenAIAccountAvailabilityGuard OpenAIAccountAvailabilityGuardConfig `mapstructure:"openai_account_availability_guard"`
 	// OpenAIProxyStreamCircuit: Responses SSE 代理断流熔断策略。
 	OpenAIProxyStreamCircuit GatewayOpenAIProxyStreamCircuitConfig `mapstructure:"openai_proxy_stream_circuit"`
 	// ImageConcurrency: 图片生成独立并发限制配置（默认关闭）
@@ -1099,6 +1101,18 @@ type GatewayConfig struct {
 	// CNProviders: 国产 OpenAI 兼容供应商（kimi/zhipu/deepseek）的余额检测配置。
 	// 仅作用于 payg（按量付费）账号：周期探测余额，低于阈值则临时停调。
 	CNProviders GatewayCNProvidersConfig `mapstructure:"cn_providers"`
+}
+
+// OpenAIAccountAvailabilityGuardConfig controls the platform-wide low-capacity
+// guard. The account count uses the same schedulable-account query as normal
+// routing, so inactive, rate-limited, quota-limited, expired and errored
+// accounts are excluded.
+type OpenAIAccountAvailabilityGuardConfig struct {
+	Enabled              bool     `mapstructure:"enabled"`
+	MinAvailableAccounts int      `mapstructure:"min_available_accounts"`
+	CheckIntervalSeconds int      `mapstructure:"check_interval_seconds"`
+	Message              string   `mapstructure:"message"`
+	ExemptPaths          []string `mapstructure:"exempt_paths"`
 }
 
 // GatewayGrokConfig holds Grok-specific gateway scheduling knobs.
@@ -2445,6 +2459,18 @@ func setDefaults() {
 	viper.SetDefault("gateway.openai_http2.fallback_error_threshold", 2)
 	viper.SetDefault("gateway.openai_http2.fallback_window_seconds", 60)
 	viper.SetDefault("gateway.openai_http2.fallback_ttl_seconds", 600)
+	viper.SetDefault("gateway.openai_account_availability_guard.enabled", false)
+	viper.SetDefault("gateway.openai_account_availability_guard.min_available_accounts", 2)
+	viper.SetDefault("gateway.openai_account_availability_guard.check_interval_seconds", 30)
+	viper.SetDefault("gateway.openai_account_availability_guard.message", "当前服务暂时不可用：可用的 OpenAI 账号数量少于系统要求，请稍后再试。")
+	viper.SetDefault("gateway.openai_account_availability_guard.exempt_paths", []string{
+		"GET /v1/models",
+		"GET /models",
+		"GET /v1/usage",
+		"GET /usage",
+		"GET /v1/images/tasks/*",
+		"GET /images/tasks/*",
+	})
 	viper.SetDefault("gateway.openai_proxy_stream_circuit.disabled", false)
 	viper.SetDefault("gateway.openai_proxy_stream_circuit.failure_threshold", 2)
 	viper.SetDefault("gateway.openai_proxy_stream_circuit.window_seconds", 60)
@@ -3304,6 +3330,18 @@ func (c *Config) Validate() error {
 	if c.Gateway.OpenAIHighEffortFirstOutputTimeoutSeconds < 0 || c.Gateway.OpenAIHighEffortFirstOutputTimeoutSeconds > 1800 ||
 		(c.Gateway.OpenAIHighEffortFirstOutputTimeoutSeconds > 0 && c.Gateway.OpenAIHighEffortFirstOutputTimeoutSeconds < 30) {
 		return fmt.Errorf("gateway.openai_high_effort_first_output_timeout_seconds must be 0 or between 30-1800 seconds")
+	}
+	if c.Gateway.OpenAIAccountAvailabilityGuard.MinAvailableAccounts < 0 {
+		return fmt.Errorf("gateway.openai_account_availability_guard.min_available_accounts must be non-negative")
+	}
+	if c.Gateway.OpenAIAccountAvailabilityGuard.CheckIntervalSeconds < 0 {
+		return fmt.Errorf("gateway.openai_account_availability_guard.check_interval_seconds must be non-negative")
+	}
+	if c.Gateway.OpenAIAccountAvailabilityGuard.CheckIntervalSeconds == 0 {
+		c.Gateway.OpenAIAccountAvailabilityGuard.CheckIntervalSeconds = 30
+	}
+	if strings.TrimSpace(c.Gateway.OpenAIAccountAvailabilityGuard.Message) == "" {
+		c.Gateway.OpenAIAccountAvailabilityGuard.Message = "当前服务暂时不可用：可用的 OpenAI 账号数量少于系统要求，请稍后再试。"
 	}
 	if c.Gateway.Live.MaxSessionDurationSeconds <= 0 {
 		c.Gateway.Live.MaxSessionDurationSeconds = 3600

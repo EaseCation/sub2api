@@ -126,6 +126,13 @@ type AccountRepository interface {
 	ListShadowsByParent(ctx context.Context, parentID int64) ([]*Account, error)
 }
 
+// SchedulableAccountCounter is an optional lightweight capability used by
+// platform capacity checks. Implementations should apply exactly the same
+// eligibility predicates as ListSchedulableByPlatform without hydrating rows.
+type SchedulableAccountCounter interface {
+	CountSchedulableByPlatform(ctx context.Context, platform string) (int, error)
+}
+
 type AccountDuplicateRepository interface {
 	// CreateWithAccountGroups atomically persists an account, its exact group priorities,
 	// and the scheduler outbox event for the new routing snapshot.

@@ -2059,6 +2059,24 @@ func (r *accountRepository) ListSchedulableByPlatform(ctx context.Context, platf
 	return r.accountsToService(ctx, accounts)
 }
 
+// CountSchedulableByPlatform is the lightweight counterpart to
+// ListSchedulableByPlatform used by platform capacity guards. Keep the
+// predicates in lockstep with the list query above.
+func (r *accountRepository) CountSchedulableByPlatform(ctx context.Context, platform string) (int, error) {
+	now := time.Now()
+	return r.client.Account.Query().
+		Where(
+			dbaccount.PlatformEQ(platform),
+			dbaccount.StatusEQ(service.StatusActive),
+			dbaccount.SchedulableEQ(true),
+			tempUnschedulablePredicate(),
+			notExpiredPredicate(now),
+			dbaccount.Or(dbaccount.OverloadUntilIsNil(), dbaccount.OverloadUntilLTE(now)),
+			dbaccount.Or(dbaccount.RateLimitResetAtIsNil(), dbaccount.RateLimitResetAtLTE(now)),
+		).
+		Count(ctx)
+}
+
 func (r *accountRepository) ListSchedulableByGroupIDAndPlatform(ctx context.Context, groupID int64, platform string) ([]service.Account, error) {
 	// 单平台查询复用多平台逻辑，保持过滤条件与排序策略一致。
 	return r.queryAccountsByGroup(ctx, groupID, accountGroupQueryOptions{

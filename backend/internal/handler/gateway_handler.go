@@ -117,6 +117,15 @@ func NewGatewayHandler(
 	}
 }
 
+// OpenAIAvailableAccountCount exposes the gateway's scheduler-aligned pool
+// count to route middleware without exposing the service's repository field.
+func (h *GatewayHandler) OpenAIAvailableAccountCount(ctx context.Context) (int, error) {
+	if h == nil || h.gatewayService == nil {
+		return 0, errors.New("gateway service is unavailable")
+	}
+	return h.gatewayService.OpenAIAvailableAccountCount(ctx)
+}
+
 // Messages handles Claude API compatible messages endpoint
 // POST /v1/messages
 func (h *GatewayHandler) Messages(c *gin.Context) {

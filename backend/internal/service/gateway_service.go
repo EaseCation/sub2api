@@ -799,6 +799,24 @@ type GatewayService struct {
 	userPlatformQuotaRepo UserPlatformQuotaRepository
 }
 
+// OpenAIAvailableAccountCount returns the number of OpenAI accounts that the
+// normal scheduler would currently consider usable. Keeping this query on the
+// gateway service makes the platform guard share the exact same eligibility
+// rules as request routing.
+func (s *GatewayService) OpenAIAvailableAccountCount(ctx context.Context) (int, error) {
+	if s == nil || s.accountRepo == nil {
+		return 0, errors.New("account repository is unavailable")
+	}
+	if counter, ok := s.accountRepo.(SchedulableAccountCounter); ok {
+		return counter.CountSchedulableByPlatform(ctx, PlatformOpenAI)
+	}
+	accounts, err := s.accountRepo.ListSchedulableByPlatform(ctx, PlatformOpenAI)
+	if err != nil {
+		return 0, err
+	}
+	return len(accounts), nil
+}
+
 // NewGatewayService creates a new GatewayService
 func NewGatewayService(
 	accountRepo AccountRepository,
