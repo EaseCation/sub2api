@@ -2,7 +2,9 @@
 set -euo pipefail
 : "${RELEASE_VERSION:?}" "${RELEASE_SHA:?}" "${GITHUB_REPOSITORY:?}" "${RUNNER_TEMP:?}"
 owner=${GITHUB_REPOSITORY%%/*}
-registries=("ghcr.io/${owner,,}/sub2api")
+ghcr_owner=${GHCR_IMAGE_OWNER:-${GITHUB_REPOSITORY_OWNER:-$owner}}
+ghcr_owner=$(printf '%s' "$ghcr_owner" | tr '[:upper:]' '[:lower:]')
+registries=("ghcr.io/${ghcr_owner}/sub2api")
 if [[ ${SIMPLE_RELEASE:-false} != true && ${DOCKERHUB_USERNAME:-skip} != skip ]]; then
   registries+=("${DOCKERHUB_USERNAME}/sub2api")
 fi

@@ -200,6 +200,10 @@ jobs:
       RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
       RELEASE_SHA: ${{ needs.prepare.outputs.sha }}
+      # The repository was transferred, while the maintained GHCR package
+      # remains under the original owner. Override this repository variable
+      # if the package namespace changes again.
+      GHCR_IMAGE_OWNER: ${{ vars.GHCR_IMAGE_OWNER || 'junxuanb' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -276,7 +280,8 @@ jobs:
           TAG_MESSAGE: ${{ steps.tag_message.outputs.message }}
           GITHUB_REPO_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
-          GITHUB_REPO_OWNER_LOWER: ${{ needs.prepare.outputs.owner_lower }}
+          GITHUB_REPO_OWNER_LOWER: ${{ env.GHCR_IMAGE_OWNER }}
+          GHCR_IMAGE_OWNER: ${{ env.GHCR_IMAGE_OWNER }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME || 'skip' }}
       - name: Upload dry-run checksums and metadata
         if: ${{ env.DRY_RUN == 'true' }}
@@ -322,7 +327,7 @@ jobs:
           TAG_NAME="$RELEASE_TAG"
           VERSION=${TAG_NAME#v}
           REPO="${{ github.repository }}"
-          GHCR_IMAGE="ghcr.io/${REPO,,}"  # ${,,} converts to lowercase
+          GHCR_IMAGE="ghcr.io/$(printf '%s' "$GHCR_IMAGE_OWNER" | tr '[:upper:]' '[:lower:]')/sub2api"
 
           # 获取 tag message 内容并转义 Markdown 特殊字符
           TAG_MESSAGE=$(echo "$TAG_MESSAGE" | sed 's/\([_*`\[]\)/\\\1/g')
