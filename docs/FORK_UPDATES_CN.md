@@ -6,6 +6,14 @@
 
 面板的“立即更新”沿用原来的程序包替换机制，不会操作宿主机 Docker。Docker 部署应通过 Compose 更新镜像，使容器重建后仍然保持正确版本。镜像为 `junxuanb/sub2api:1.0.0`，同时提供 `latest` 标签。
 
+## 当前开发分支同步记录
+
+2026-09-28 同步官方 [v0.2.9](https://github.com/Wei-Shaw/sub2api/releases/tag/v0.2.9)，合并提交为 `4c00df2e0183e2c70b7fa8ba45914205e36aad0c`。同步范围截至该发布标签，不包含标签之后的官方 main 改动。
+
+同步前已完整撤回 OpenAI 可用账号低于阈值时关闭网关的封锁模式，包括后台设置、全局提示及相关配置。继续保留支付宝证书认证、本分支更新与官方版本展示、手动发布流程和镜像仓库配置；API 密钥多分组改动未恢复。
+
+此次仅同步代码，版本文件暂保留 `1.0.0`，不代表重新发布 1.0.0，也不会更新已发布镜像或服务器。后续正式发布必须选择未使用的新版本号。此次上游包含数据库迁移 `239_channel_reasoning_effort_multipliers.sql` 和 `240_affiliate_ledger_operation_id.sql`，部署前应备份数据库。
+
 ## 从支付宝证书版升级
 
 在现有 Compose 文件所在目录执行，文件名按实际情况修改。不要用仓库示例覆盖现有 Compose 或 `.env`，保留所有现有数据卷、数据库密码、JWT_SECRET 和 TOTP_ENCRYPTION_KEY。
