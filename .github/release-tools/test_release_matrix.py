@@ -52,14 +52,14 @@ class ReleaseMatrixTest(unittest.TestCase):
 
     def test_matrix_matches_existing_targets(self):
         full = release.targets()
-        self.assertEqual(len(full), 5)
-        self.assertNotIn({'goos': 'windows', 'goarch': 'arm64'}, full)
+        self.assertEqual(full, [{'goos': 'linux', 'goarch': 'amd64'},
+                                {'goos': 'linux', 'goarch': 'arm64'}])
 
     def test_leaf_keeps_packaging_and_selects_only_one_target(self):
         original = release.config()
-        release.generate_config(argparse.Namespace(mode='build', goos='darwin', goarch='arm64', output='leaf.yaml'))
+        release.generate_config(argparse.Namespace(mode='build', goos='linux', goarch='arm64', output='leaf.yaml'))
         leaf = yaml.safe_load(Path('leaf.yaml').read_text())
-        self.assertEqual(leaf['builds'][0]['goos'], ['darwin'])
+        self.assertEqual(leaf['builds'][0]['goos'], ['linux'])
         self.assertEqual(leaf['builds'][0]['goarch'], ['arm64'])
         self.assertEqual(leaf['builds'][0]['ignore'], [])
         self.assertEqual(leaf['archives'], original['archives'])
@@ -77,7 +77,7 @@ class ReleaseMatrixTest(unittest.TestCase):
         self.assertEqual(data['release']['header'], original['release']['header'])
         self.assertEqual(data['release']['footer'], original['release']['footer'])
         self.assertEqual(data['checksum']['extra_files'], data['release']['extra_files'])
-        self.assertEqual(len(data['release']['extra_files']), 2)
+        self.assertEqual(len(data['release']['extra_files']), 1)
         self.assertNotIn('ghcr.io', data['release']['footer'])
 
     def test_collect_and_verify_hash_and_source_binding(self):
@@ -130,7 +130,7 @@ class ReleaseMatrixTest(unittest.TestCase):
             release.plan(argparse.Namespace(ref='feature/matrix', dry_run=True))
         output = dict(line.split('=', 1) for line in Path('outputs').read_text().splitlines())
         self.assertEqual(output['dry_run'], 'true')
-        self.assertEqual(len(json.loads(output['matrix'])['include']), 5)
+        self.assertEqual(len(json.loads(output['matrix'])['include']), 2)
 
     def test_docker_commands_do_not_publish_during_dry_run(self):
         fake_bin = Path('bin')

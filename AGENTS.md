@@ -23,6 +23,7 @@
 ## 手动发布，不自动部署服务器
 
 - GitHub Actions 仅保留 GitHub Release 程序包和 Docker Hub `junxuanb/sub2api` 镜像发布流程，不发布 GHCR。测试、lint 和安全检查在本地完成；不要恢复独立 CI、安全扫描、CLA 工作流或发布通知、简介更新、版本号自动回写步骤，除非用户明确要求。
+- 发布构建仅保留 Linux amd64（Ubuntu）和 Linux arm64（64 位树莓派 DietPi / Ubuntu）的程序包与镜像；不恢复 Windows、macOS 或 32 位 ARM 构建，除非用户明确要求。
 - `.github/workflows/release.yml` 只使用 `workflow_dispatch`。不要添加 `push`、标签推送、定时任务等自动发布触发器，除非用户明确改变要求。
 - 发布由 GitHub 手动触发；运行后自动构建程序包、创建 GitHub Release 并上传 Docker 镜像。
 - 用户只要求修复代码时不发布。用户已要求发布时，完成检查后执行提交、推送、触发和验证，不重复要求确认。

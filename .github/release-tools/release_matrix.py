@@ -39,8 +39,7 @@ def targets():
 def archive_name(version, target):
     if not VERSION_RE.fullmatch(version) or target not in targets():
         raise ValueError('invalid release version or target')
-    suffix = 'zip' if target['goos'] == 'windows' else 'tar.gz'
-    return f"sub2api_{version}_{target['goos']}_{target['goarch']}.{suffix}"
+    return f"sub2api_{version}_{target['goos']}_{target['goarch']}.tar.gz"
 
 
 def sha256(path):
@@ -92,7 +91,7 @@ def generate_config(args):
         data['before'] = {'hooks': []}
         data['builds'] = [{'id': 'sub2api', 'skip': True}]
         data['archives'] = []
-        extra = [{'glob': 'release-input/sub2api_*.tar.gz'}, {'glob': 'release-input/sub2api_*.zip'}]
+        extra = [{'glob': 'release-input/sub2api_*.tar.gz'}]
         data['release']['extra_files'] = extra
         data['checksum'] = {'name_template': 'checksums.txt', 'algorithm': 'sha256', 'extra_files': extra}
     Path(args.output).write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))

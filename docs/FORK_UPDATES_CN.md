@@ -14,15 +14,18 @@
 
 此次仅同步代码，版本文件暂保留 `1.0.0`，不代表重新发布 1.0.0，也不会更新已发布镜像或服务器。后续正式发布必须选择未使用的新版本号。此次上游包含数据库迁移 `239_channel_reasoning_effort_multipliers.sql` 和 `240_affiliate_ledger_operation_id.sql`，部署前应备份数据库。
 
-## 1.2.0 发布范围（2026-09-28）
+## 1.2.1 发布范围（2026-09-28）
 
 - 合入官方 v0.2.9，截至上游提交 `4c00df2e0183e2c70b7fa8ba45914205e36aad0c`；本分支合并提交为 `6be44007a4c01f41116a6a10946bef076ff43ee9`。
 - 新增分组 Session Skill：支持管理端配置、复制分组和受支持文本请求的规则注入，默认关闭。详见 `docs/GROUP_SESSION_SKILL_CN.md`。
 - 新增 OpenAI 优先保障模式：默认关闭，默认阈值 2。可调度实体账号数小于等于阈值时，仅优先保障用户的新 OpenAI 请求放行；其他平台和已经开始的请求不受影响，全站显示提示。详见 `docs/OPENAI_PRIORITY_CN.md`。
 - 保留支付宝证书认证、本分支更新与官方版本展示；不恢复 API 密钥多分组或 OpenAI 全员封锁模式。
+- 构建仅保留 Linux amd64（Ubuntu）和 Linux arm64（64 位树莓派 DietPi / Ubuntu）；删除 Windows、macOS 构建。
 - GitHub Actions 仅保留手动 Release，发布 GitHub Release 程序包、校验和以及 Docker Hub `junxuanb/sub2api` 的 amd64、arm64 镜像；删除 GHCR、独立 CI、安全扫描、CLA 及其他非产物发布步骤。
 
-此版本在官方迁移 239、240 基础上增加 `241_group_session_skill.sql` 和 `242_user_openai_priority.sql`，应用启动时自动迁移。升级前备份数据库，沿用现有 Compose、数据卷和 `.env`，仅重建 `sub2api` 服务。固定版本镜像使用 `junxuanb/sub2api:1.2.0`。
+`v1.2.0` 标签已推送，其发布流程因缩减构建平台而取消；保留该标签，不移动或复用，改用 `v1.2.1` 发布。
+
+此版本在官方迁移 239、240 基础上增加 `241_group_session_skill.sql` 和 `242_user_openai_priority.sql`，应用启动时自动迁移。升级前备份数据库，沿用现有 Compose、数据卷和 `.env`，仅重建 `sub2api` 服务。固定版本镜像使用 `junxuanb/sub2api:1.2.1`。
 
 ## 从支付宝证书版升级
 
