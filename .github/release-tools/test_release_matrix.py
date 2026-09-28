@@ -27,15 +27,14 @@ class ReleaseMatrixTest(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         os.chdir(self.temp.name)
         self.addCleanup(os.chdir, self.previous)
-        for name in ('.goreleaser.yaml', '.goreleaser.simple.yaml'):
-            shutil.copyfile(ROOT / name, name)
+        shutil.copyfile(ROOT / '.goreleaser.yaml', '.goreleaser.yaml')
         Path('backend/cmd/server').mkdir(parents=True)
         release.VERSION_FILE.write_text('9.8.7\n')
 
-    def fixture_artifacts(self, simple=False):
+    def fixture_artifacts(self):
         directory = Path('release-input')
         directory.mkdir()
-        for target in release.targets(simple):
+        for target in release.targets():
             name = release.archive_name('9.8.7', target)
             archive = directory / name
             if target['goos'] == 'linux':
@@ -49,17 +48,16 @@ class ReleaseMatrixTest(unittest.TestCase):
             metadata = {'version': '9.8.7', 'sha': 'a' * 40, 'target': target,
                         'archive': name, 'sha256': release.sha256(archive)}
             (directory / f"manifest-{target['goos']}-{target['goarch']}.json").write_text(json.dumps(metadata))
-        return argparse.Namespace(input='release-input', version='9.8.7', sha='a' * 40, simple=simple, output='contexts')
+        return argparse.Namespace(input='release-input', version='9.8.7', sha='a' * 40, output='contexts')
 
-    def test_full_and_simple_matrix_match_existing_targets(self):
+    def test_matrix_matches_existing_targets(self):
         full = release.targets()
         self.assertEqual(len(full), 5)
         self.assertNotIn({'goos': 'windows', 'goarch': 'arm64'}, full)
-        self.assertEqual(release.targets(True), [{'goos': 'linux', 'goarch': 'amd64'}])
 
     def test_leaf_keeps_packaging_and_selects_only_one_target(self):
         original = release.config()
-        release.generate_config(argparse.Namespace(mode='build', simple=False, goos='darwin', goarch='arm64', output='leaf.yaml'))
+        release.generate_config(argparse.Namespace(mode='build', goos='darwin', goarch='arm64', output='leaf.yaml'))
         leaf = yaml.safe_load(Path('leaf.yaml').read_text())
         self.assertEqual(leaf['builds'][0]['goos'], ['darwin'])
         self.assertEqual(leaf['builds'][0]['goarch'], ['arm64'])
@@ -70,21 +68,17 @@ class ReleaseMatrixTest(unittest.TestCase):
         self.assertIn('{{ .Env.RELEASE_DATE }}', '\n'.join(leaf['builds'][0]['ldflags']))
 
     def test_publication_config_has_no_compilation_or_docker_work(self):
-        for simple in (False, True):
-            with self.subTest(simple=simple):
-                original = release.config(simple)
-                release.generate_config(argparse.Namespace(mode='publish', simple=simple, output='publisher.yaml'))
-                data = yaml.safe_load(Path('publisher.yaml').read_text())
-                self.assertTrue(data['builds'][0]['skip'])
-                self.assertFalse(data['archives'])
-                self.assertFalse(data['dockers'])
-                self.assertEqual(data['release']['header'], original['release']['header'])
-                self.assertEqual(data['release']['footer'], original['release']['footer'])
-                if simple:
-                    self.assertTrue(data['checksum']['disable'])
-                    self.assertTrue(data['release']['skip_upload'])
-                else:
-                    self.assertEqual(data['checksum']['extra_files'], data['release']['extra_files'])
+        original = release.config()
+        release.generate_config(argparse.Namespace(mode='publish', output='publisher.yaml'))
+        data = yaml.safe_load(Path('publisher.yaml').read_text())
+        self.assertTrue(data['builds'][0]['skip'])
+        self.assertFalse(data['archives'])
+        self.assertFalse(data['dockers'])
+        self.assertEqual(data['release']['header'], original['release']['header'])
+        self.assertEqual(data['release']['footer'], original['release']['footer'])
+        self.assertEqual(data['checksum']['extra_files'], data['release']['extra_files'])
+        self.assertEqual(len(data['release']['extra_files']), 2)
+        self.assertNotIn('ghcr.io', data['release']['footer'])
 
     def test_collect_and_verify_hash_and_source_binding(self):
         args = self.fixture_artifacts()
@@ -95,7 +89,7 @@ class ReleaseMatrixTest(unittest.TestCase):
             release.verify(args)
 
     def test_missing_extra_and_wrong_commit_artifacts_are_rejected(self):
-        args = self.fixture_artifacts(True)
+        args = self.fixture_artifacts()
         args.sha = 'b' * 40
         with self.assertRaises(ValueError):
             release.verify(args)
@@ -122,7 +116,7 @@ class ReleaseMatrixTest(unittest.TestCase):
             self.assertEqual(binary.stat().st_mode & 0o777, 0o755)
 
     def test_plan_requires_a_tag_for_publication(self):
-        args = argparse.Namespace(ref='main', dry_run=False, simple=False)
+        args = argparse.Namespace(ref='main', dry_run=False)
         with patch.object(subprocess, 'check_output', return_value='a' * 40 + '\n'):
             with self.assertRaisesRegex(ValueError, 'version tag'):
                 release.plan(args)
@@ -133,10 +127,9 @@ class ReleaseMatrixTest(unittest.TestCase):
 
     def test_dry_run_plan_resolves_matrix_without_a_new_tag(self):
         with patch.dict(os.environ, {'GITHUB_OUTPUT': 'outputs', 'GITHUB_REPOSITORY_OWNER': 'ExampleOwner'}), patch.object(subprocess, 'check_output', return_value='a' * 40 + '\n'):
-            release.plan(argparse.Namespace(ref='feature/matrix', dry_run=True, simple=False))
+            release.plan(argparse.Namespace(ref='feature/matrix', dry_run=True))
         output = dict(line.split('=', 1) for line in Path('outputs').read_text().splitlines())
         self.assertEqual(output['dry_run'], 'true')
-        self.assertEqual(output['owner_lower'], 'exampleowner')
         self.assertEqual(len(json.loads(output['matrix'])['include']), 5)
 
     def test_docker_commands_do_not_publish_during_dry_run(self):
@@ -148,7 +141,7 @@ class ReleaseMatrixTest(unittest.TestCase):
         env = {**os.environ, 'PATH': str(fake_bin.resolve()) + os.pathsep + os.environ['PATH'],
                'DOCKER_LOG': str(Path('docker.log').resolve()), 'RUNNER_TEMP': self.temp.name,
                'RELEASE_VERSION': '9.8.7', 'RELEASE_SHA': 'a' * 40, 'GITHUB_REPOSITORY': 'ExampleOwner/sub2api',
-               'DRY_RUN': 'true', 'SIMPLE_RELEASE': 'false', 'DOCKERHUB_USERNAME': 'skip'}
+               'DRY_RUN': 'true'}
         subprocess.run(['bash', str(ROOT / '.github/release-tools/release-images.sh')], env=env, check=True)
         log = Path('docker.log').read_text()
         self.assertEqual(log.count('buildx build'), 2)
@@ -156,35 +149,37 @@ class ReleaseMatrixTest(unittest.TestCase):
         self.assertNotIn('--push', log)
         self.assertNotIn('imagetools', log)
         self.assertNotIn('skip/sub2api', log)
-        self.assertIn('ghcr.io/exampleowner/sub2api', log)
+        self.assertNotIn('ghcr.io', log)
+        self.assertIn('junxuanb/sub2api', log)
 
 
-    def test_published_full_and_simple_image_tags(self):
+    def test_published_dockerhub_multiarch_image_tags(self):
         fake_bin = Path('bin')
         fake_bin.mkdir()
         docker = fake_bin / 'docker'
         docker.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> "$DOCKER_LOG"\n')
         docker.chmod(0o755)
-        for simple in (False, True):
-            with self.subTest(simple=simple):
-                log_path = Path(f'docker-{simple}.log').resolve()
-                env = {**os.environ, 'PATH': str(fake_bin.resolve()) + os.pathsep + os.environ['PATH'],
-                       'DOCKER_LOG': str(log_path), 'RUNNER_TEMP': self.temp.name,
-                       'RELEASE_VERSION': '9.8.7', 'RELEASE_SHA': 'a' * 40, 'GITHUB_REPOSITORY': 'ExampleOwner/sub2api',
-                       'DRY_RUN': 'false', 'SIMPLE_RELEASE': str(simple).lower(), 'DOCKERHUB_USERNAME': 'fixturehub'}
-                subprocess.run(['bash', str(ROOT / '.github/release-tools/release-images.sh')], env=env, check=True)
-                log = log_path.read_text()
-                self.assertIn('--push', log)
-                self.assertEqual(log.count('buildx build'), 1 if simple else 2)
-                if simple:
-                    self.assertNotIn('fixturehub', log)
-                    self.assertNotIn('imagetools', log)
-                    self.assertIn('ghcr.io/exampleowner/sub2api:latest', log)
-                else:
-                    self.assertEqual(log.count('imagetools create'), 2)
-                    self.assertIn('fixturehub/sub2api:9.8', log)
-                    self.assertIn('ghcr.io/exampleowner/sub2api:9', log)
-
+        log_path = Path('docker.log').resolve()
+        env = {**os.environ, 'PATH': str(fake_bin.resolve()) + os.pathsep + os.environ['PATH'],
+               'DOCKER_LOG': str(log_path), 'RUNNER_TEMP': self.temp.name,
+               'RELEASE_VERSION': '9.8.7', 'RELEASE_SHA': 'a' * 40, 'GITHUB_REPOSITORY': 'ExampleOwner/sub2api',
+               'DRY_RUN': 'false'}
+        subprocess.run(['bash', str(ROOT / '.github/release-tools/release-images.sh')], env=env, check=True)
+        lines = log_path.read_text().splitlines()
+        builds = [line for line in lines if line.startswith('buildx build ')]
+        manifests = [line for line in lines if line.startswith('buildx imagetools create ')]
+        self.assertEqual(len(builds), 2)
+        self.assertEqual(len(manifests), 1)
+        for arch, command in zip(('amd64', 'arm64'), builds):
+            self.assertIn(f'--platform linux/{arch}', command)
+            self.assertIn(f'--tag junxuanb/sub2api:9.8.7-{arch}', command)
+            self.assertIn('--push', command)
+            self.assertIn(f'org.opencontainers.image.revision={"a" * 40}', command)
+        for tag in ('9.8.7', 'latest', '9.8', '9'):
+            self.assertIn(f'--tag junxuanb/sub2api:{tag}', manifests[0])
+        for arch in ('amd64', 'arm64'):
+            self.assertIn(f'junxuanb/sub2api:9.8.7-{arch}', manifests[0])
+        self.assertNotIn('ghcr.io', log_path.read_text())
 
 
 if __name__ == '__main__':

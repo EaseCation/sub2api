@@ -74,6 +74,7 @@ func UserFromServiceAdmin(u *service.User) *AdminUser {
 		LastUsedAt:           u.LastUsedAt,
 		GroupRates:           u.GroupRates,
 		RestrictPublicGroups: u.RestrictPublicGroups,
+		OpenAIPriority:       u.OpenAIPriority,
 	}
 }
 
@@ -150,6 +151,8 @@ func GroupFromServiceAdmin(g *service.Group) *AdminGroup {
 		Group:                       groupFromServiceBase(g),
 		ForceOpenAIFast:             g.ForceOpenAIFast,
 		FreeOpenAIFast:              g.FreeOpenAIFast,
+		SessionSkillEnabled:         g.SessionSkillEnabled,
+		SessionSkill:                g.SessionSkill,
 		ProfitControlEnabled:        g.ProfitControlEnabled,
 		ProfitMinMargin:             g.ProfitMinMargin,
 		ProfitSafetyBuffer:          g.ProfitSafetyBuffer,

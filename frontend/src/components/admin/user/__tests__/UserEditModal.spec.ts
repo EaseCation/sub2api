@@ -77,6 +77,15 @@ describe('UserEditModal concurrency', () => {
     expect(wrapper.emitted('success')).toBeTruthy()
   })
 
+  it('saves the administrator-managed priority flag', async () => {
+    const wrapper = mountModal(3)
+    await wrapper.get('[data-test="openai-priority-input"]').setValue(true)
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(update).toHaveBeenCalledWith(7, expect.objectContaining({ openai_priority: true }))
+    wrapper.unmount()
+  })
+
   it('still rejects a negative concurrency', async () => {
     const wrapper = mountModal(3)
 

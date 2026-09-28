@@ -15,24 +15,22 @@ from datetime import datetime, timezone
 import yaml
 
 FULL_CONFIG = Path('.goreleaser.yaml')
-SIMPLE_CONFIG = Path('.goreleaser.simple.yaml')
 VERSION_FILE = Path('backend/cmd/server/VERSION')
 VERSION_RE = re.compile(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?')
 
 
-def config(simple=False):
-    return yaml.safe_load((SIMPLE_CONFIG if simple else FULL_CONFIG).read_text())
+def config():
+    return yaml.safe_load(FULL_CONFIG.read_text())
 
 
-def targets(simple=False):
+def targets():
     build = config()['builds'][0]
     result = []
     for goos, goarch in itertools.product(build['goos'], build['goarch']):
         item = {'goos': goos, 'goarch': goarch}
         if any(all(item.get(k) == v for k, v in rule.items()) for rule in build.get('ignore', [])):
             continue
-        if not simple or item == {'goos': 'linux', 'goarch': 'amd64'}:
-            result.append(item)
+        result.append(item)
     if not result:
         raise ValueError('empty release target matrix')
     return result
@@ -67,17 +65,16 @@ def plan(args):
         raise ValueError('invalid VERSION')
     VERSION_FILE.write_text(version + '\n')
     result = {'sha': sha, 'tag': tag, 'version': version,
-              'owner_lower': os.environ.get('GITHUB_REPOSITORY_OWNER', '').lower(),
-              'simple': str(args.simple).lower(), 'dry_run': str(args.dry_run).lower(),
+              'dry_run': str(args.dry_run).lower(),
               'date': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-              'matrix': json.dumps({'include': targets(args.simple)}, separators=(',', ':'))}
+              'matrix': json.dumps({'include': targets()}, separators=(',', ':'))}
     with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
         for key, value in result.items():
             output.write(f'{key}={value}\n')
 
 
 def generate_config(args):
-    data = config(args.simple if args.mode == 'publish' else False)
+    data = config()
     data['snapshot'] = {'version_template': '{{ .Env.RELEASE_VERSION }}'}
     data['dockers'] = []
     data['docker_manifests'] = []
@@ -96,11 +93,8 @@ def generate_config(args):
         data['builds'] = [{'id': 'sub2api', 'skip': True}]
         data['archives'] = []
         extra = [{'glob': 'release-input/sub2api_*.tar.gz'}, {'glob': 'release-input/sub2api_*.zip'}]
-        if args.simple:
-            data['checksum'] = {'disable': True}
-        else:
-            data['release']['extra_files'] = extra
-            data['checksum'] = {'name_template': 'checksums.txt', 'algorithm': 'sha256', 'extra_files': extra}
+        data['release']['extra_files'] = extra
+        data['checksum'] = {'name_template': 'checksums.txt', 'algorithm': 'sha256', 'extra_files': extra}
     Path(args.output).write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
 
 
@@ -122,7 +116,7 @@ def collect(args):
 def verify(args):
     directory = Path(args.input)
     expected = set()
-    for target in targets(args.simple):
+    for target in targets():
         name = archive_name(args.version, target)
         manifest_name = f"manifest-{target['goos']}-{target['goarch']}.json"
         expected.update((name, manifest_name))
@@ -136,7 +130,7 @@ def verify(args):
 
 def contexts(args):
     verify(args)
-    for target in targets(args.simple):
+    for target in targets():
         if target['goos'] != 'linux':
             continue
         dest = Path(args.output) / target['goarch']
@@ -159,14 +153,12 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     p = commands.add_parser('plan')
     p.add_argument('--ref', required=True)
-    p.add_argument('--simple', action='store_true')
     p.add_argument('--dry-run', action='store_true')
     p.set_defaults(run=plan)
     p = commands.add_parser('config')
     p.add_argument('mode', choices=['build', 'publish'])
     p.add_argument('--goos')
     p.add_argument('--goarch')
-    p.add_argument('--simple', action='store_true')
     p.add_argument('--output', required=True)
     p.set_defaults(run=generate_config)
     p = commands.add_parser('collect')
@@ -177,7 +169,6 @@ def main():
         p = commands.add_parser(command)
         for arg in ('version', 'sha', 'input'):
             p.add_argument('--' + arg, required=True)
-        p.add_argument('--simple', action='store_true')
         if command == 'contexts':
             p.add_argument('--output', required=True)
         p.set_defaults(run=handler)

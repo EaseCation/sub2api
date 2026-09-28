@@ -53,6 +53,8 @@ type User struct {
 	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
 	// LastActiveAt holds the value of the "last_active_at" field.
 	LastActiveAt *time.Time `json:"last_active_at,omitempty"`
+	// OpenaiPriority holds the value of the "openai_priority" field.
+	OpenaiPriority bool `json:"openai_priority,omitempty"`
 	// RestrictPublicGroups holds the value of the "restrict_public_groups" field.
 	RestrictPublicGroups bool `json:"restrict_public_groups,omitempty"`
 	// BalanceNotifyEnabled holds the value of the "balance_notify_enabled" field.
@@ -239,7 +241,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldTotpEnabled, user.FieldRestrictPublicGroups, user.FieldBalanceNotifyEnabled:
+		case user.FieldTotpEnabled, user.FieldOpenaiPriority, user.FieldRestrictPublicGroups, user.FieldBalanceNotifyEnabled:
 			values[i] = new(sql.NullBool)
 		case user.FieldBalance, user.FieldFrozenBalance, user.FieldBalanceNotifyThreshold, user.FieldTotalRecharged:
 			values[i] = new(sql.NullFloat64)
@@ -382,6 +384,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.LastActiveAt = new(time.Time)
 				*_m.LastActiveAt = value.Time
+			}
+		case user.FieldOpenaiPriority:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field openai_priority", values[i])
+			} else if value.Valid {
+				_m.OpenaiPriority = value.Bool
 			}
 		case user.FieldRestrictPublicGroups:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -595,6 +603,9 @@ func (_m *User) String() string {
 		builder.WriteString("last_active_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("openai_priority=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OpenaiPriority))
 	builder.WriteString(", ")
 	builder.WriteString("restrict_public_groups=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RestrictPublicGroups))

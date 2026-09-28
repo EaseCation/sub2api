@@ -43,6 +43,13 @@
         </div>
       </div>
       <div>
+        <label class="flex items-center gap-2">
+          <input v-model="form.openai_priority" type="checkbox" data-test="openai-priority-input" />
+          {{ t('admin.settings.openaiPriority.userLabel') }}
+        </label>
+        <p class="input-hint">{{ t('admin.settings.openaiPriority.userHint') }}</p>
+      </div>
+      <div>
         <label class="input-label">{{ t('admin.users.form.rpmLimit') }}</label>
         <input
           v-model.number="form.rpm_limit"
@@ -82,7 +89,7 @@ const props = defineProps<{ show: boolean }>()
 const emit = defineEmits(['close', 'success']); const { t } = useI18n()
 const appStore = useAppStore()
 
-const form = reactive({ email: '', password: '', username: '', notes: '', role: 'user' as 'user' | 'admin', balance: '', concurrency: 1, rpm_limit: 0 })
+const form = reactive({ email: '', password: '', username: '', notes: '', role: 'user' as 'user' | 'admin', balance: '', concurrency: 1, openai_priority: false, rpm_limit: 0 })
 
 const stepUp = useStepUp()
 const loading = ref(false)
@@ -116,7 +123,7 @@ const submit = async () => {
   } finally { loading.value = false }
 }
 
-watch(() => props.show, (v) => { if(v) Object.assign(form, { email: '', password: '', username: '', notes: '', role: 'user', balance: '', concurrency: 1, rpm_limit: 0 }) })
+watch(() => props.show, (v) => { if(v) Object.assign(form, { email: '', password: '', username: '', notes: '', role: 'user', balance: '', concurrency: 1, openai_priority: false, rpm_limit: 0 }) })
 
 const generateRandomPassword = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*'

@@ -14,6 +14,16 @@
 
 此次仅同步代码，版本文件暂保留 `1.0.0`，不代表重新发布 1.0.0，也不会更新已发布镜像或服务器。后续正式发布必须选择未使用的新版本号。此次上游包含数据库迁移 `239_channel_reasoning_effort_multipliers.sql` 和 `240_affiliate_ledger_operation_id.sql`，部署前应备份数据库。
 
+## 1.2.0 发布范围（2026-09-28）
+
+- 合入官方 v0.2.9，截至上游提交 `4c00df2e0183e2c70b7fa8ba45914205e36aad0c`；本分支合并提交为 `6be44007a4c01f41116a6a10946bef076ff43ee9`。
+- 新增分组 Session Skill：支持管理端配置、复制分组和受支持文本请求的规则注入，默认关闭。详见 `docs/GROUP_SESSION_SKILL_CN.md`。
+- 新增 OpenAI 优先保障模式：默认关闭，默认阈值 2。可调度实体账号数小于等于阈值时，仅优先保障用户的新 OpenAI 请求放行；其他平台和已经开始的请求不受影响，全站显示提示。详见 `docs/OPENAI_PRIORITY_CN.md`。
+- 保留支付宝证书认证、本分支更新与官方版本展示；不恢复 API 密钥多分组或 OpenAI 全员封锁模式。
+- GitHub Actions 仅保留手动 Release，发布 GitHub Release 程序包、校验和以及 Docker Hub `junxuanb/sub2api` 的 amd64、arm64 镜像；删除 GHCR、独立 CI、安全扫描、CLA 及其他非产物发布步骤。
+
+此版本在官方迁移 239、240 基础上增加 `241_group_session_skill.sql` 和 `242_user_openai_priority.sql`，应用启动时自动迁移。升级前备份数据库，沿用现有 Compose、数据卷和 `.env`，仅重建 `sub2api` 服务。固定版本镜像使用 `junxuanb/sub2api:1.2.0`。
+
 ## 从支付宝证书版升级
 
 在现有 Compose 文件所在目录执行，文件名按实际情况修改。不要用仓库示例覆盖现有 Compose 或 `.env`，保留所有现有数据卷、数据库密码、JWT_SECRET 和 TOTP_ENCRYPTION_KEY。
@@ -49,6 +59,8 @@ docker compose -f docker-compose.local.yml logs --tail=100 sub2api
 
 ## 在 GitHub 手动触发镜像发布
 
+GitHub Actions 仅保留 Release 工作流，用于构建、校验并上传 GitHub Release 程序包及 Docker Hub `junxuanb/sub2api` 镜像；不再发布 GHCR 镜像。测试、lint 和安全检查在本地完成，不运行独立 CI、安全扫描或 CLA 工作流。发布流程不发送 Telegram 通知、不更新 Docker Hub 简介，也不自动回写版本号；正式发布前应在本地更新并提交 `backend/cmd/server/VERSION`。
+
 `.github/workflows/release.yml` 只允许从 GitHub → Actions → Release → Run workflow 手动触发。推送代码或标签均不会发布镜像。触发后，构建和上传自动完成。当前仓库已配置发布所需的两个 Actions Secrets：
 
 | Secret | 值 |
@@ -56,7 +68,7 @@ docker compose -f docker-compose.local.yml logs --tail=100 sub2api
 | `DOCKERHUB_USERNAME` | `junxuanb` |
 | `DOCKERHUB_TOKEN` | Docker Hub Personal Access Token |
 
-每次正式发布会生成 GitHub Release、程序包及校验和，并发布 Docker Hub / GHCR 的 amd64、arm64 镜像，例如 `junxuanb/sub2api:1.0.0`，同时更新 `latest`、`1.0`、`1` 标签。后续正式发布的例子：
+每次正式发布会生成 GitHub Release、程序包及校验和，并发布 Docker Hub 的 amd64、arm64 镜像，例如 `junxuanb/sub2api:1.0.0`，同时更新 `latest`、`1.0`、`1` 标签。后续正式发布的例子：
 
 ```bash
 # 先把 backend/cmd/server/VERSION 改为 1.0.1 并提交
@@ -65,7 +77,7 @@ git tag -a v1.0.1 -m "Release 1.0.1" -m "本次更新说明"
 git push origin main v1.0.1
 ```
 
-推送完成后，打开 https://github.com/JunxuanB/sub2api/actions/workflows/release.yml ，点击 Run workflow，工作流分支选 `main`，tag 填写已存在的版本标签（如 `v1.0.1`）。正常发布时不要勾选 `simple_release` 或 `dry_run`：前者仅发布 GHCR 的 amd64 镜像，后者仅构建而不发布。
+推送完成后，打开 https://github.com/JunxuanB/sub2api/actions/workflows/release.yml ，点击 Run workflow，工作流分支选 `main`，tag 填写已存在的版本标签（如 `v1.0.1`）。正常发布时不要勾选 `dry_run`（该选项仅构建而不发布）。
 
 只推送代码或标签不会更新正式版 `latest`；必须手动运行 Release。服务器中的固定版本标签也不会因镜像发布自动改变；容器自动更新还需要额外接入服务器部署步骤。
 

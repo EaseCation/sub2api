@@ -79,6 +79,11 @@ const {
   showSuccess: vi.fn(),
 }));
 
+vi.mock("@/api/openaiPriority", () => ({
+  getOpenAIPrioritySettings: vi.fn().mockResolvedValue({ enabled: false, threshold: 2 }),
+  saveOpenAIPrioritySettings: vi.fn().mockImplementation(async (value) => value),
+}));
+
 const localeRef = vi.hoisted(() => ({ value: "zh-CN" }));
 
 vi.mock("@/api", () => ({

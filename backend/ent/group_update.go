@@ -1003,6 +1003,34 @@ func (_u *GroupUpdate) SetNillableForceOpenaiFast(v *bool) *GroupUpdate {
 	return _u
 }
 
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (_u *GroupUpdate) SetSessionSkillEnabled(v bool) *GroupUpdate {
+	_u.mutation.SetSessionSkillEnabled(v)
+	return _u
+}
+
+// SetNillableSessionSkillEnabled sets the "session_skill_enabled" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSessionSkillEnabled(v *bool) *GroupUpdate {
+	if v != nil {
+		_u.SetSessionSkillEnabled(*v)
+	}
+	return _u
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (_u *GroupUpdate) SetSessionSkill(v string) *GroupUpdate {
+	_u.mutation.SetSessionSkill(v)
+	return _u
+}
+
+// SetNillableSessionSkill sets the "session_skill" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSessionSkill(v *string) *GroupUpdate {
+	if v != nil {
+		_u.SetSessionSkill(*v)
+	}
+	return _u
+}
+
 // SetFreeOpenaiFast sets the "free_openai_fast" field.
 func (_u *GroupUpdate) SetFreeOpenaiFast(v bool) *GroupUpdate {
 	_u.mutation.SetFreeOpenaiFast(v)
@@ -1860,6 +1888,12 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.ForceOpenaiFast(); ok {
 		_spec.SetField(group.FieldForceOpenaiFast, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SessionSkillEnabled(); ok {
+		_spec.SetField(group.FieldSessionSkillEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SessionSkill(); ok {
+		_spec.SetField(group.FieldSessionSkill, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.FreeOpenaiFast(); ok {
 		_spec.SetField(group.FieldFreeOpenaiFast, field.TypeBool, value)
@@ -3197,6 +3231,34 @@ func (_u *GroupUpdateOne) SetNillableForceOpenaiFast(v *bool) *GroupUpdateOne {
 	return _u
 }
 
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (_u *GroupUpdateOne) SetSessionSkillEnabled(v bool) *GroupUpdateOne {
+	_u.mutation.SetSessionSkillEnabled(v)
+	return _u
+}
+
+// SetNillableSessionSkillEnabled sets the "session_skill_enabled" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSessionSkillEnabled(v *bool) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSessionSkillEnabled(*v)
+	}
+	return _u
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (_u *GroupUpdateOne) SetSessionSkill(v string) *GroupUpdateOne {
+	_u.mutation.SetSessionSkill(v)
+	return _u
+}
+
+// SetNillableSessionSkill sets the "session_skill" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSessionSkill(v *string) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSessionSkill(*v)
+	}
+	return _u
+}
+
 // SetFreeOpenaiFast sets the "free_openai_fast" field.
 func (_u *GroupUpdateOne) SetFreeOpenaiFast(v bool) *GroupUpdateOne {
 	_u.mutation.SetFreeOpenaiFast(v)
@@ -4084,6 +4146,12 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 	}
 	if value, ok := _u.mutation.ForceOpenaiFast(); ok {
 		_spec.SetField(group.FieldForceOpenaiFast, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SessionSkillEnabled(); ok {
+		_spec.SetField(group.FieldSessionSkillEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SessionSkill(); ok {
+		_spec.SetField(group.FieldSessionSkill, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.FreeOpenaiFast(); ok {
 		_spec.SetField(group.FieldFreeOpenaiFast, field.TypeBool, value)

@@ -69,6 +69,7 @@ type CreateUserRequest struct {
 	RPMLimit             int      `json:"rpm_limit"`
 	AllowedGroups        []int64  `json:"allowed_groups"`
 	RestrictPublicGroups bool     `json:"restrict_public_groups"`
+	OpenAIPriority       bool     `json:"openai_priority"`
 }
 
 // UpdateUserRequest represents admin update user request
@@ -85,6 +86,7 @@ type UpdateUserRequest struct {
 	Status               string   `json:"status" binding:"omitempty,oneof=active disabled"`
 	AllowedGroups        *[]int64 `json:"allowed_groups"`
 	RestrictPublicGroups *bool    `json:"restrict_public_groups"`
+	OpenAIPriority       *bool    `json:"openai_priority"`
 	// GroupRates 用户专属分组倍率配置
 	// map[groupID]*rate，nil 表示删除该分组的专属倍率
 	GroupRates map[int64]*float64 `json:"group_rates"`
@@ -296,6 +298,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		RPMLimit:             req.RPMLimit,
 		AllowedGroups:        req.AllowedGroups,
 		RestrictPublicGroups: req.RestrictPublicGroups,
+		OpenAIPriority:       req.OpenAIPriority,
 		ActorAdminID:         getAdminIDFromContext(c),
 	})
 	if err != nil {
@@ -356,6 +359,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		Status:               req.Status,
 		AllowedGroups:        req.AllowedGroups,
 		RestrictPublicGroups: req.RestrictPublicGroups,
+		OpenAIPriority:       req.OpenAIPriority,
 		GroupRates:           req.GroupRates,
 		ActorAdminID:         getAdminIDFromContext(c),
 	})

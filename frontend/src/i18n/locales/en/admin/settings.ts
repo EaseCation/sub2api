@@ -1,5 +1,21 @@
 export default {
     settings: {
+      openaiPriority: {
+        retry: 'Retry',
+        "title": "OpenAI priority guarantee mode",
+        "description": "When enabled and the global count of schedulable physical OpenAI accounts is at or below the threshold, only priority users may request OpenAI. Access resumes automatically after recovery. Paused, disabled, rate-limited and quota-exhausted accounts are excluded. Other platforms are unaffected. Gateway status refreshes about every 2 seconds and the banner every 5 seconds.",
+        "enabled": "Enable OpenAI priority guarantee mode",
+        "threshold": "Account trigger threshold (default: 2)",
+        "save": "Save priority settings",
+        "saved": "Priority settings saved",
+        "saveFailed": "Failed to save priority settings",
+        "loadFailed": "Failed to load priority settings",
+        "invalidThreshold": "Enter an integer between 0 and 1000000",
+        "userLabel": "OpenAI priority guarantee",
+        "userHint": "Off by default. All keys owned by this user may still request OpenAI during priority mode. Existing balance and access limits still apply.",
+        "alert": "OpenAI capacity is low and priority guarantee mode is active. Only priority-enabled users can use OpenAI. Other users should try again later. Other platforms are unaffected."
+},
+
       title: 'System Settings',
       description: 'Manage registration, email verification, default values, and SMTP settings',
       tabs: {

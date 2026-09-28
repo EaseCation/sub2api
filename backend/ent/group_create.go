@@ -718,6 +718,34 @@ func (_c *GroupCreate) SetNillableForceOpenaiFast(v *bool) *GroupCreate {
 	return _c
 }
 
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (_c *GroupCreate) SetSessionSkillEnabled(v bool) *GroupCreate {
+	_c.mutation.SetSessionSkillEnabled(v)
+	return _c
+}
+
+// SetNillableSessionSkillEnabled sets the "session_skill_enabled" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableSessionSkillEnabled(v *bool) *GroupCreate {
+	if v != nil {
+		_c.SetSessionSkillEnabled(*v)
+	}
+	return _c
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (_c *GroupCreate) SetSessionSkill(v string) *GroupCreate {
+	_c.mutation.SetSessionSkill(v)
+	return _c
+}
+
+// SetNillableSessionSkill sets the "session_skill" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableSessionSkill(v *string) *GroupCreate {
+	if v != nil {
+		_c.SetSessionSkill(*v)
+	}
+	return _c
+}
+
 // SetFreeOpenaiFast sets the "free_openai_fast" field.
 func (_c *GroupCreate) SetFreeOpenaiFast(v bool) *GroupCreate {
 	_c.mutation.SetFreeOpenaiFast(v)
@@ -1155,6 +1183,14 @@ func (_c *GroupCreate) defaults() error {
 		v := group.DefaultForceOpenaiFast
 		_c.mutation.SetForceOpenaiFast(v)
 	}
+	if _, ok := _c.mutation.SessionSkillEnabled(); !ok {
+		v := group.DefaultSessionSkillEnabled
+		_c.mutation.SetSessionSkillEnabled(v)
+	}
+	if _, ok := _c.mutation.SessionSkill(); !ok {
+		v := group.DefaultSessionSkill
+		_c.mutation.SetSessionSkill(v)
+	}
 	if _, ok := _c.mutation.FreeOpenaiFast(); !ok {
 		v := group.DefaultFreeOpenaiFast
 		_c.mutation.SetFreeOpenaiFast(v)
@@ -1360,6 +1396,12 @@ func (_c *GroupCreate) check() error {
 	}
 	if _, ok := _c.mutation.ForceOpenaiFast(); !ok {
 		return &ValidationError{Name: "force_openai_fast", err: errors.New(`ent: missing required field "Group.force_openai_fast"`)}
+	}
+	if _, ok := _c.mutation.SessionSkillEnabled(); !ok {
+		return &ValidationError{Name: "session_skill_enabled", err: errors.New(`ent: missing required field "Group.session_skill_enabled"`)}
+	}
+	if _, ok := _c.mutation.SessionSkill(); !ok {
+		return &ValidationError{Name: "session_skill", err: errors.New(`ent: missing required field "Group.session_skill"`)}
 	}
 	if _, ok := _c.mutation.FreeOpenaiFast(); !ok {
 		return &ValidationError{Name: "free_openai_fast", err: errors.New(`ent: missing required field "Group.free_openai_fast"`)}
@@ -1652,6 +1694,14 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ForceOpenaiFast(); ok {
 		_spec.SetField(group.FieldForceOpenaiFast, field.TypeBool, value)
 		_node.ForceOpenaiFast = value
+	}
+	if value, ok := _c.mutation.SessionSkillEnabled(); ok {
+		_spec.SetField(group.FieldSessionSkillEnabled, field.TypeBool, value)
+		_node.SessionSkillEnabled = value
+	}
+	if value, ok := _c.mutation.SessionSkill(); ok {
+		_spec.SetField(group.FieldSessionSkill, field.TypeString, value)
+		_node.SessionSkill = value
 	}
 	if value, ok := _c.mutation.FreeOpenaiFast(); ok {
 		_spec.SetField(group.FieldFreeOpenaiFast, field.TypeBool, value)
@@ -2732,6 +2782,30 @@ func (u *GroupUpsert) SetForceOpenaiFast(v bool) *GroupUpsert {
 // UpdateForceOpenaiFast sets the "force_openai_fast" field to the value that was provided on create.
 func (u *GroupUpsert) UpdateForceOpenaiFast() *GroupUpsert {
 	u.SetExcluded(group.FieldForceOpenaiFast)
+	return u
+}
+
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (u *GroupUpsert) SetSessionSkillEnabled(v bool) *GroupUpsert {
+	u.Set(group.FieldSessionSkillEnabled, v)
+	return u
+}
+
+// UpdateSessionSkillEnabled sets the "session_skill_enabled" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateSessionSkillEnabled() *GroupUpsert {
+	u.SetExcluded(group.FieldSessionSkillEnabled)
+	return u
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (u *GroupUpsert) SetSessionSkill(v string) *GroupUpsert {
+	u.Set(group.FieldSessionSkill, v)
+	return u
+}
+
+// UpdateSessionSkill sets the "session_skill" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateSessionSkill() *GroupUpsert {
+	u.SetExcluded(group.FieldSessionSkill)
 	return u
 }
 
@@ -3981,6 +4055,34 @@ func (u *GroupUpsertOne) SetForceOpenaiFast(v bool) *GroupUpsertOne {
 func (u *GroupUpsertOne) UpdateForceOpenaiFast() *GroupUpsertOne {
 	return u.Update(func(s *GroupUpsert) {
 		s.UpdateForceOpenaiFast()
+	})
+}
+
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (u *GroupUpsertOne) SetSessionSkillEnabled(v bool) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetSessionSkillEnabled(v)
+	})
+}
+
+// UpdateSessionSkillEnabled sets the "session_skill_enabled" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateSessionSkillEnabled() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateSessionSkillEnabled()
+	})
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (u *GroupUpsertOne) SetSessionSkill(v string) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetSessionSkill(v)
+	})
+}
+
+// UpdateSessionSkill sets the "session_skill" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateSessionSkill() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateSessionSkill()
 	})
 }
 
@@ -5427,6 +5529,34 @@ func (u *GroupUpsertBulk) SetForceOpenaiFast(v bool) *GroupUpsertBulk {
 func (u *GroupUpsertBulk) UpdateForceOpenaiFast() *GroupUpsertBulk {
 	return u.Update(func(s *GroupUpsert) {
 		s.UpdateForceOpenaiFast()
+	})
+}
+
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (u *GroupUpsertBulk) SetSessionSkillEnabled(v bool) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetSessionSkillEnabled(v)
+	})
+}
+
+// UpdateSessionSkillEnabled sets the "session_skill_enabled" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateSessionSkillEnabled() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateSessionSkillEnabled()
+	})
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (u *GroupUpsertBulk) SetSessionSkill(v string) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetSessionSkill(v)
+	})
+}
+
+// UpdateSessionSkill sets the "session_skill" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateSessionSkill() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateSessionSkill()
 	})
 }
 

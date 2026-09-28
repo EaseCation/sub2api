@@ -5,7 +5,7 @@
 - 本仓库是 `JunxuanB/sub2api`，官方上游是 `Wei-Shaw/sub2api` 的 `main`。
 - 保留本分支的支付宝证书认证功能，以及“本分支可更新、官方版本仅展示”的更新面板。
 - API 密钥多分组需求已撤回，不要在后续维护中恢复这项改动，除非用户再次明确提出。
-- OpenAI 可用账号低于阈值时关闭网关的封锁模式已撤回，不要恢复相关拦截、后台设置或全局提示，除非用户再次明确提出。
+- 原 OpenAI 低账号数全员封锁模式保持撤回。用户已重新授权 OpenAI 优先保障模式：默认关闭，默认阈值 2，可调度实体账号数小于等于阈值时，仅 openai_priority=true 用户的新 OpenAI 请求放行；其他平台与已经开始的请求不受影响，全站向所有访客显示提示。不得将此模式改成全员封锁。
 - 合并官方代码时先检查工作区，保护用户未提交修改；保留本分支功能、发布配置及本文件。
 
 ## 独立版本号
@@ -22,6 +22,7 @@
 
 ## 手动发布，不自动部署服务器
 
+- GitHub Actions 仅保留 GitHub Release 程序包和 Docker Hub `junxuanb/sub2api` 镜像发布流程，不发布 GHCR。测试、lint 和安全检查在本地完成；不要恢复独立 CI、安全扫描、CLA 工作流或发布通知、简介更新、版本号自动回写步骤，除非用户明确要求。
 - `.github/workflows/release.yml` 只使用 `workflow_dispatch`。不要添加 `push`、标签推送、定时任务等自动发布触发器，除非用户明确改变要求。
 - 发布由 GitHub 手动触发；运行后自动构建程序包、创建 GitHub Release 并上传 Docker 镜像。
 - 用户只要求修复代码时不发布。用户已要求发布时，完成检查后执行提交、推送、触发和验证，不重复要求确认。
@@ -38,11 +39,11 @@
    git push origin main v1.0.1
    ```
 
-4. 打开 GitHub → Actions → Release → Run workflow：分支选 `main`；`tag` 填已存在的版本标签；正式完整发布不勾选 `simple_release` 和 `dry_run`。也可由代理在用户授权发布后显式执行：
+4. 打开 GitHub → Actions → Release → Run workflow：分支选 `main`；`tag` 填已存在的版本标签；正式发布不勾选 `dry_run`。也可由代理在用户授权发布后显式执行：
 
    ```bash
    gh workflow run release.yml --repo JunxuanB/sub2api --ref main \
-     -f tag=v1.0.1 -f simple_release=false -f dry_run=false
+     -f tag=v1.0.1 -f dry_run=false
    ```
 
 5. 等待工作流成功，检查 GitHub Release 的程序包和 `checksums.txt`，确认 Docker Hub 镜像包含 `linux/amd64` 和 `linux/arm64`。
@@ -53,10 +54,10 @@
 
 - 可安装版本、回退版本及程序包来自 `JunxuanB/sub2api` 的 GitHub Releases。
 - 官方 `Wei-Shaw/sub2api` 版本仅供展示，不提供官方更新按钮，也不得回退到官方源下载。
-- Docker Hub：`junxuanb/sub2api`；GHCR：`ghcr.io/junxuanb/sub2api`。完整发布会更新版本标签及 `latest`、主次版本别名。
+- Docker Hub：`junxuanb/sub2api`。发布会更新版本标签及 `latest`、主次版本别名；GHCR 发布和简易发布模式已删除，不要恢复。
 - GitHub Actions Secrets：`DOCKERHUB_USERNAME=junxuanb`，`DOCKERHUB_TOKEN` 为拥有 Read / Write 权限的 Docker Hub PAT。当前已配置；Token 到期时替换 Secret。
 - 不输出 Token，不把凭据写入 Git、发布说明或普通配置文件。
-- `simple_release=true` 仅发布 GHCR 的 amd64 镜像，缺少完整程序包，不适用于本分支正常发布；`dry_run=true` 只构建验证，不上传。
+- `dry_run=true` 只构建验证，不上传。
 - Docker 部署用 Compose 拉取和重建。面板“立即更新”沿用程序包替换机制，不会更新宿主机镜像。
 
 操作说明见 `docs/FORK_UPDATES_CN.md`。

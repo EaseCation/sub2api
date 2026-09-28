@@ -1495,6 +1495,11 @@
           </div>
         </div>
 
+        <GroupSessionSkillFields
+          v-model:enabled="createForm.session_skill_enabled"
+          v-model:skill="createForm.session_skill"
+        />
+
         <!-- Grok Voice 显式定价（仅 grok 平台） -->
         <div
           v-if="createForm.platform === 'grok'"
@@ -3145,6 +3150,11 @@
           </div>
         </div>
 
+        <GroupSessionSkillFields
+          v-model:enabled="editForm.session_skill_enabled"
+          v-model:skill="editForm.session_skill"
+        />
+
         <!-- Grok Voice 显式定价（仅 grok 平台） -->
         <div
           v-if="editForm.platform === 'grok'"
@@ -4265,6 +4275,7 @@
 </template>
 
 <script setup lang="ts">
+import GroupSessionSkillFields from "@/components/admin/group/GroupSessionSkillFields.vue";
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/stores/app";
@@ -4950,6 +4961,8 @@ const createForm = reactive({
   long_context_pricing_enabled: true,
   force_openai_fast: false,
   free_openai_fast: false,
+  session_skill_enabled: false,
+  session_skill: "",
   model_pricing: [] as PricingFormEntry[],
   // 图片生成计费配置
   allow_image_generation: false,
@@ -5315,6 +5328,8 @@ const editForm = reactive({
   long_context_pricing_enabled: true,
   force_openai_fast: false,
   free_openai_fast: false,
+  session_skill_enabled: false,
+  session_skill: "",
   model_pricing: [] as PricingFormEntry[],
   // 图片生成计费配置
   allow_image_generation: false,
@@ -5792,6 +5807,8 @@ const closeCreateModal = () => {
   createForm.long_context_pricing_enabled = true;
   createForm.force_openai_fast = false;
   createForm.free_openai_fast = false;
+  createForm.session_skill_enabled = false;
+  createForm.session_skill = "";
   createForm.model_pricing = [];
   createForm.web_search_price_per_call = null;
   createForm.search_price_per_1k = null;
@@ -5878,6 +5895,10 @@ const validateGroupReasoningMultipliers = (pricing: PricingFormEntry[]): boolean
 };
 
 const handleCreateGroup = async () => {
+  if (createForm.session_skill_enabled && !createForm.session_skill.trim()) {
+    appStore.showError(t("admin.groups.sessionSkill.required"));
+    return;
+  }
   if (!createForm.name.trim()) {
     appStore.showError(t("admin.groups.nameRequired"));
     return;
@@ -6060,6 +6081,8 @@ const handleEdit = async (group: AdminGroup) => {
     group.long_context_pricing_enabled ?? true;
   editForm.force_openai_fast = group.force_openai_fast ?? false;
   editForm.free_openai_fast = group.free_openai_fast ?? false;
+  editForm.session_skill_enabled = group.session_skill_enabled ?? false;
+  editForm.session_skill = group.session_skill ?? "";
   editForm.model_pricing = groupPricingFromAPI(group.model_pricing);
   editForm.allow_image_generation = group.allow_image_generation ?? false;
   editForm.allow_batch_image_generation =
@@ -6194,6 +6217,8 @@ const closeEditModal = () => {
   editForm.long_context_pricing_enabled = true;
   editForm.force_openai_fast = false;
   editForm.free_openai_fast = false;
+  editForm.session_skill_enabled = false;
+  editForm.session_skill = "";
   editForm.model_pricing = [];
   editForm.web_search_price_per_call = null;
   editForm.search_price_per_1k = null;
@@ -6209,6 +6234,10 @@ const closeEditModal = () => {
 };
 
 const handleUpdateGroup = async () => {
+  if (editForm.session_skill_enabled && !editForm.session_skill.trim()) {
+    appStore.showError(t("admin.groups.sessionSkill.required"));
+    return;
+  }
   if (!editingGroup.value) return;
   if (!editForm.name.trim()) {
     appStore.showError(t("admin.groups.nameRequired"));

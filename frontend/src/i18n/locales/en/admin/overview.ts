@@ -846,6 +846,14 @@ export default {
 
     // Groups
     groups: {
+      sessionSkill: {
+        title: 'Run Skill at session start',
+        description: 'Add purpose confirmation or other rules to text conversations in this group. The model uses conversation history to identify new sessions and avoid repeating completed checks or confirmations.',
+        label: 'Skill instructions',
+        hint: 'A condition to run only at the first interaction of the current session is added automatically. Model compliance is best effort. Supports text APIs and Responses WebSocket, not realtime audio/video or standalone image/video endpoints.',
+        placeholder: 'Check Git status and the remote repository in the current working directory. If it is not under EaseCation/, ask the user to confirm that this AI session is for EaseCation development before other work. Remember the original request and resume after explicit confirmation.',
+        required: 'Enter Skill instructions before enabling this option',
+      },
       title: 'Group Management',
       description: 'Manage API key groups and rate multipliers',
       searchGroups: 'Search groups...',

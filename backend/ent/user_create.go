@@ -270,6 +270,20 @@ func (_c *UserCreate) SetNillableLastActiveAt(v *time.Time) *UserCreate {
 	return _c
 }
 
+// SetOpenaiPriority sets the "openai_priority" field.
+func (_c *UserCreate) SetOpenaiPriority(v bool) *UserCreate {
+	_c.mutation.SetOpenaiPriority(v)
+	return _c
+}
+
+// SetNillableOpenaiPriority sets the "openai_priority" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOpenaiPriority(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetOpenaiPriority(*v)
+	}
+	return _c
+}
+
 // SetRestrictPublicGroups sets the "restrict_public_groups" field.
 func (_c *UserCreate) SetRestrictPublicGroups(v bool) *UserCreate {
 	_c.mutation.SetRestrictPublicGroups(v)
@@ -650,6 +664,10 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultSignupSource
 		_c.mutation.SetSignupSource(v)
 	}
+	if _, ok := _c.mutation.OpenaiPriority(); !ok {
+		v := user.DefaultOpenaiPriority
+		_c.mutation.SetOpenaiPriority(v)
+	}
 	if _, ok := _c.mutation.RestrictPublicGroups(); !ok {
 		v := user.DefaultRestrictPublicGroups
 		_c.mutation.SetRestrictPublicGroups(v)
@@ -747,6 +765,9 @@ func (_c *UserCreate) check() error {
 		if err := user.SignupSourceValidator(v); err != nil {
 			return &ValidationError{Name: "signup_source", err: fmt.Errorf(`ent: validator failed for field "User.signup_source": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.OpenaiPriority(); !ok {
+		return &ValidationError{Name: "openai_priority", err: errors.New(`ent: missing required field "User.openai_priority"`)}
 	}
 	if _, ok := _c.mutation.RestrictPublicGroups(); !ok {
 		return &ValidationError{Name: "restrict_public_groups", err: errors.New(`ent: missing required field "User.restrict_public_groups"`)}
@@ -864,6 +885,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.LastActiveAt(); ok {
 		_spec.SetField(user.FieldLastActiveAt, field.TypeTime, value)
 		_node.LastActiveAt = &value
+	}
+	if value, ok := _c.mutation.OpenaiPriority(); ok {
+		_spec.SetField(user.FieldOpenaiPriority, field.TypeBool, value)
+		_node.OpenaiPriority = value
 	}
 	if value, ok := _c.mutation.RestrictPublicGroups(); ok {
 		_spec.SetField(user.FieldRestrictPublicGroups, field.TypeBool, value)
@@ -1409,6 +1434,18 @@ func (u *UserUpsert) ClearLastActiveAt() *UserUpsert {
 	return u
 }
 
+// SetOpenaiPriority sets the "openai_priority" field.
+func (u *UserUpsert) SetOpenaiPriority(v bool) *UserUpsert {
+	u.Set(user.FieldOpenaiPriority, v)
+	return u
+}
+
+// UpdateOpenaiPriority sets the "openai_priority" field to the value that was provided on create.
+func (u *UserUpsert) UpdateOpenaiPriority() *UserUpsert {
+	u.SetExcluded(user.FieldOpenaiPriority)
+	return u
+}
+
 // SetRestrictPublicGroups sets the "restrict_public_groups" field.
 func (u *UserUpsert) SetRestrictPublicGroups(v bool) *UserUpsert {
 	u.Set(user.FieldRestrictPublicGroups, v)
@@ -1853,6 +1890,20 @@ func (u *UserUpsertOne) UpdateLastActiveAt() *UserUpsertOne {
 func (u *UserUpsertOne) ClearLastActiveAt() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearLastActiveAt()
+	})
+}
+
+// SetOpenaiPriority sets the "openai_priority" field.
+func (u *UserUpsertOne) SetOpenaiPriority(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetOpenaiPriority(v)
+	})
+}
+
+// UpdateOpenaiPriority sets the "openai_priority" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateOpenaiPriority() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateOpenaiPriority()
 	})
 }
 
@@ -2484,6 +2535,20 @@ func (u *UserUpsertBulk) UpdateLastActiveAt() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearLastActiveAt() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearLastActiveAt()
+	})
+}
+
+// SetOpenaiPriority sets the "openai_priority" field.
+func (u *UserUpsertBulk) SetOpenaiPriority(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetOpenaiPriority(v)
+	})
+}
+
+// UpdateOpenaiPriority sets the "openai_priority" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateOpenaiPriority() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateOpenaiPriority()
 	})
 }
 

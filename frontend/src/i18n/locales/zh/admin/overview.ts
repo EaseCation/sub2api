@@ -843,6 +843,14 @@ export default {
 
     // Groups Management
     groups: {
+      sessionSkill: {
+        title: 'Session 发起后执行 Skill',
+        description: '为当前分组的文本对话附加用途确认等规则。模型会结合历史判断是否为新会话，已执行或已确认后不再重复。',
+        label: 'Skill 内容',
+        hint: '系统会自动附加“仅在当前会话首次交互时执行”的条件。通过模型指令尽力生效，不保证强制执行；适用于文本 API 和 Responses WebSocket，不适用于实时音视频或独立图片、视频接口。',
+        placeholder: '检查当前工作目录的 Git 状态和远程仓库。如果不属于 EaseCation/ 下的仓库，在其他操作之前要求用户确认本次 AI 调用用于 EaseCation 服务开发。记住用户原始需求，等待明确确认后继续。',
+        required: '启用后请输入 Skill 内容',
+      },
       title: '分组管理',
       description: '管理 API 密钥分组和费率配置',
       searchGroups: '搜索分组...',

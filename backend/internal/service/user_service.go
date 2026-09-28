@@ -115,6 +115,7 @@ type UserUpdateFields struct {
 	AllowedGroups bool
 	// RestrictPublicGroups 覆盖 restrict_public_groups 列。
 	RestrictPublicGroups bool
+	OpenAIPriority       bool
 }
 
 // BalanceChange 记录一次余额变更前后的值。

@@ -1,5 +1,21 @@
 export default {
     settings: {
+      openaiPriority: {
+        retry: '重试',
+        "title": "OpenAI 优先保障模式",
+        "description": "开启后，全站可调度的 OpenAI 实体账号数量小于等于阈值时，仅优先保障用户的 Key 可以请求 OpenAI；恢复后自动解除。暂停、禁用、限流及额度耗尽的账号不计入，其他平台不受影响。网关状态约 2 秒刷新，网页提示约 5 秒刷新。",
+        "enabled": "开启 OpenAI 优先保障模式",
+        "threshold": "最低触发账号数量（默认 2）",
+        "save": "保存优先保障设置",
+        "saved": "优先保障设置已保存",
+        "saveFailed": "保存优先保障设置失败",
+        "loadFailed": "加载优先保障设置失败",
+        "invalidThreshold": "请输入 0 到 1000000 之间的整数",
+        "userLabel": "OpenAI 优先保障",
+        "userHint": "默认关闭。开启后，此用户的所有 Key 在优先保障模式下仍可请求 OpenAI，原有余额和权限限制仍然生效。",
+        "alert": "当前 OpenAI 可用账号不足，已触发优先保障模式。仅开启优先保障的用户可使用 OpenAI，其他用户请稍后重试。其他平台不受影响。"
+},
+
       title: '系统设置',
       description: '管理注册、邮箱验证、默认值和 SMTP 设置',
       tabs: {

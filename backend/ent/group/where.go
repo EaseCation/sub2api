@@ -295,6 +295,16 @@ func ForceOpenaiFast(v bool) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldForceOpenaiFast, v))
 }
 
+// SessionSkillEnabled applies equality check predicate on the "session_skill_enabled" field. It's identical to SessionSkillEnabledEQ.
+func SessionSkillEnabled(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldSessionSkillEnabled, v))
+}
+
+// SessionSkill applies equality check predicate on the "session_skill" field. It's identical to SessionSkillEQ.
+func SessionSkill(v string) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldSessionSkill, v))
+}
+
 // FreeOpenaiFast applies equality check predicate on the "free_openai_fast" field. It's identical to FreeOpenaiFastEQ.
 func FreeOpenaiFast(v bool) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldFreeOpenaiFast, v))
@@ -2293,6 +2303,81 @@ func ForceOpenaiFastEQ(v bool) predicate.Group {
 // ForceOpenaiFastNEQ applies the NEQ predicate on the "force_openai_fast" field.
 func ForceOpenaiFastNEQ(v bool) predicate.Group {
 	return predicate.Group(sql.FieldNEQ(FieldForceOpenaiFast, v))
+}
+
+// SessionSkillEnabledEQ applies the EQ predicate on the "session_skill_enabled" field.
+func SessionSkillEnabledEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldSessionSkillEnabled, v))
+}
+
+// SessionSkillEnabledNEQ applies the NEQ predicate on the "session_skill_enabled" field.
+func SessionSkillEnabledNEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldSessionSkillEnabled, v))
+}
+
+// SessionSkillEQ applies the EQ predicate on the "session_skill" field.
+func SessionSkillEQ(v string) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldSessionSkill, v))
+}
+
+// SessionSkillNEQ applies the NEQ predicate on the "session_skill" field.
+func SessionSkillNEQ(v string) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldSessionSkill, v))
+}
+
+// SessionSkillIn applies the In predicate on the "session_skill" field.
+func SessionSkillIn(vs ...string) predicate.Group {
+	return predicate.Group(sql.FieldIn(FieldSessionSkill, vs...))
+}
+
+// SessionSkillNotIn applies the NotIn predicate on the "session_skill" field.
+func SessionSkillNotIn(vs ...string) predicate.Group {
+	return predicate.Group(sql.FieldNotIn(FieldSessionSkill, vs...))
+}
+
+// SessionSkillGT applies the GT predicate on the "session_skill" field.
+func SessionSkillGT(v string) predicate.Group {
+	return predicate.Group(sql.FieldGT(FieldSessionSkill, v))
+}
+
+// SessionSkillGTE applies the GTE predicate on the "session_skill" field.
+func SessionSkillGTE(v string) predicate.Group {
+	return predicate.Group(sql.FieldGTE(FieldSessionSkill, v))
+}
+
+// SessionSkillLT applies the LT predicate on the "session_skill" field.
+func SessionSkillLT(v string) predicate.Group {
+	return predicate.Group(sql.FieldLT(FieldSessionSkill, v))
+}
+
+// SessionSkillLTE applies the LTE predicate on the "session_skill" field.
+func SessionSkillLTE(v string) predicate.Group {
+	return predicate.Group(sql.FieldLTE(FieldSessionSkill, v))
+}
+
+// SessionSkillContains applies the Contains predicate on the "session_skill" field.
+func SessionSkillContains(v string) predicate.Group {
+	return predicate.Group(sql.FieldContains(FieldSessionSkill, v))
+}
+
+// SessionSkillHasPrefix applies the HasPrefix predicate on the "session_skill" field.
+func SessionSkillHasPrefix(v string) predicate.Group {
+	return predicate.Group(sql.FieldHasPrefix(FieldSessionSkill, v))
+}
+
+// SessionSkillHasSuffix applies the HasSuffix predicate on the "session_skill" field.
+func SessionSkillHasSuffix(v string) predicate.Group {
+	return predicate.Group(sql.FieldHasSuffix(FieldSessionSkill, v))
+}
+
+// SessionSkillEqualFold applies the EqualFold predicate on the "session_skill" field.
+func SessionSkillEqualFold(v string) predicate.Group {
+	return predicate.Group(sql.FieldEqualFold(FieldSessionSkill, v))
+}
+
+// SessionSkillContainsFold applies the ContainsFold predicate on the "session_skill" field.
+func SessionSkillContainsFold(v string) predicate.Group {
+	return predicate.Group(sql.FieldContainsFold(FieldSessionSkill, v))
 }
 
 // FreeOpenaiFastEQ applies the EQ predicate on the "free_openai_fast" field.

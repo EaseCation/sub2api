@@ -696,6 +696,11 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 		firstClientMessage = liteFirstMessage
 	}
 	originalFirstClientMessage := firstClientMessage
+	if next, skillErr := injectGroupSessionSkillWS(c, firstClientMessage); skillErr != nil {
+		return NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, skillErr.Error(), skillErr)
+	} else {
+		firstClientMessage = next
+	}
 	if next, policyErr := applyOpenAIWSReasoningEffortPolicy(firstClientMessage, hooks); policyErr != nil {
 		return NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, policyErr.Error(), policyErr)
 	} else {
@@ -1032,6 +1037,11 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 					payload = litePayload
 				}
 				originalResponseCreate := payload
+				if next, skillErr := injectGroupSessionSkillWS(c, payload); skillErr != nil {
+					return payload, nil, NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, skillErr.Error(), skillErr)
+				} else {
+					payload = next
+				}
 				if next, policyErr := applyOpenAIWSReasoningEffortPolicy(payload, hooks); policyErr != nil {
 					return payload, nil, NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, policyErr.Error(), policyErr)
 				} else {

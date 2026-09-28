@@ -321,6 +321,20 @@ func (_u *UserUpdate) ClearLastActiveAt() *UserUpdate {
 	return _u
 }
 
+// SetOpenaiPriority sets the "openai_priority" field.
+func (_u *UserUpdate) SetOpenaiPriority(v bool) *UserUpdate {
+	_u.mutation.SetOpenaiPriority(v)
+	return _u
+}
+
+// SetNillableOpenaiPriority sets the "openai_priority" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableOpenaiPriority(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetOpenaiPriority(*v)
+	}
+	return _u
+}
+
 // SetRestrictPublicGroups sets the "restrict_public_groups" field.
 func (_u *UserUpdate) SetRestrictPublicGroups(v bool) *UserUpdate {
 	_u.mutation.SetRestrictPublicGroups(v)
@@ -1082,6 +1096,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LastActiveAtCleared() {
 		_spec.ClearField(user.FieldLastActiveAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.OpenaiPriority(); ok {
+		_spec.SetField(user.FieldOpenaiPriority, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.RestrictPublicGroups(); ok {
 		_spec.SetField(user.FieldRestrictPublicGroups, field.TypeBool, value)
@@ -2014,6 +2031,20 @@ func (_u *UserUpdateOne) ClearLastActiveAt() *UserUpdateOne {
 	return _u
 }
 
+// SetOpenaiPriority sets the "openai_priority" field.
+func (_u *UserUpdateOne) SetOpenaiPriority(v bool) *UserUpdateOne {
+	_u.mutation.SetOpenaiPriority(v)
+	return _u
+}
+
+// SetNillableOpenaiPriority sets the "openai_priority" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOpenaiPriority(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetOpenaiPriority(*v)
+	}
+	return _u
+}
+
 // SetRestrictPublicGroups sets the "restrict_public_groups" field.
 func (_u *UserUpdateOne) SetRestrictPublicGroups(v bool) *UserUpdateOne {
 	_u.mutation.SetRestrictPublicGroups(v)
@@ -2805,6 +2836,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.LastActiveAtCleared() {
 		_spec.ClearField(user.FieldLastActiveAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.OpenaiPriority(); ok {
+		_spec.SetField(user.FieldOpenaiPriority, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.RestrictPublicGroups(); ok {
 		_spec.SetField(user.FieldRestrictPublicGroups, field.TypeBool, value)

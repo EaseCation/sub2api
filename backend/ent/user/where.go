@@ -145,6 +145,11 @@ func LastActiveAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldLastActiveAt, v))
 }
 
+// OpenaiPriority applies equality check predicate on the "openai_priority" field. It's identical to OpenaiPriorityEQ.
+func OpenaiPriority(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldOpenaiPriority, v))
+}
+
 // RestrictPublicGroups applies equality check predicate on the "restrict_public_groups" field. It's identical to RestrictPublicGroupsEQ.
 func RestrictPublicGroups(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldRestrictPublicGroups, v))
@@ -1118,6 +1123,16 @@ func LastActiveAtIsNil() predicate.User {
 // LastActiveAtNotNil applies the NotNil predicate on the "last_active_at" field.
 func LastActiveAtNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldLastActiveAt))
+}
+
+// OpenaiPriorityEQ applies the EQ predicate on the "openai_priority" field.
+func OpenaiPriorityEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldOpenaiPriority, v))
+}
+
+// OpenaiPriorityNEQ applies the NEQ predicate on the "openai_priority" field.
+func OpenaiPriorityNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldOpenaiPriority, v))
 }
 
 // RestrictPublicGroupsEQ applies the EQ predicate on the "restrict_public_groups" field.

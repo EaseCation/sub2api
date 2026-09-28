@@ -22159,6 +22159,8 @@ type GroupMutation struct {
 	allow_messages_dispatch                 *bool
 	allow_live                              *bool
 	force_openai_fast                       *bool
+	session_skill_enabled                   *bool
+	session_skill                           *string
 	free_openai_fast                        *bool
 	require_oauth_only                      *bool
 	require_privacy_set                     *bool
@@ -24984,6 +24986,78 @@ func (m *GroupMutation) ResetForceOpenaiFast() {
 	m.force_openai_fast = nil
 }
 
+// SetSessionSkillEnabled sets the "session_skill_enabled" field.
+func (m *GroupMutation) SetSessionSkillEnabled(b bool) {
+	m.session_skill_enabled = &b
+}
+
+// SessionSkillEnabled returns the value of the "session_skill_enabled" field in the mutation.
+func (m *GroupMutation) SessionSkillEnabled() (r bool, exists bool) {
+	v := m.session_skill_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSessionSkillEnabled returns the old "session_skill_enabled" field's value of the Group entity.
+// If the Group object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupMutation) OldSessionSkillEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSessionSkillEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSessionSkillEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSessionSkillEnabled: %w", err)
+	}
+	return oldValue.SessionSkillEnabled, nil
+}
+
+// ResetSessionSkillEnabled resets all changes to the "session_skill_enabled" field.
+func (m *GroupMutation) ResetSessionSkillEnabled() {
+	m.session_skill_enabled = nil
+}
+
+// SetSessionSkill sets the "session_skill" field.
+func (m *GroupMutation) SetSessionSkill(s string) {
+	m.session_skill = &s
+}
+
+// SessionSkill returns the value of the "session_skill" field in the mutation.
+func (m *GroupMutation) SessionSkill() (r string, exists bool) {
+	v := m.session_skill
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSessionSkill returns the old "session_skill" field's value of the Group entity.
+// If the Group object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupMutation) OldSessionSkill(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSessionSkill is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSessionSkill requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSessionSkill: %w", err)
+	}
+	return oldValue.SessionSkill, nil
+}
+
+// ResetSessionSkill resets all changes to the "session_skill" field.
+func (m *GroupMutation) ResetSessionSkill() {
+	m.session_skill = nil
+}
+
 // SetFreeOpenaiFast sets the "free_openai_fast" field.
 func (m *GroupMutation) SetFreeOpenaiFast(b bool) {
 	m.free_openai_fast = &b
@@ -25921,7 +25995,7 @@ func (m *GroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GroupMutation) Fields() []string {
-	fields := make([]string, 0, 66)
+	fields := make([]string, 0, 68)
 	if m.created_at != nil {
 		fields = append(fields, group.FieldCreatedAt)
 	}
@@ -26078,6 +26152,12 @@ func (m *GroupMutation) Fields() []string {
 	if m.force_openai_fast != nil {
 		fields = append(fields, group.FieldForceOpenaiFast)
 	}
+	if m.session_skill_enabled != nil {
+		fields = append(fields, group.FieldSessionSkillEnabled)
+	}
+	if m.session_skill != nil {
+		fields = append(fields, group.FieldSessionSkill)
+	}
 	if m.free_openai_fast != nil {
 		fields = append(fields, group.FieldFreeOpenaiFast)
 	}
@@ -26232,6 +26312,10 @@ func (m *GroupMutation) Field(name string) (ent.Value, bool) {
 		return m.AllowLive()
 	case group.FieldForceOpenaiFast:
 		return m.ForceOpenaiFast()
+	case group.FieldSessionSkillEnabled:
+		return m.SessionSkillEnabled()
+	case group.FieldSessionSkill:
+		return m.SessionSkill()
 	case group.FieldFreeOpenaiFast:
 		return m.FreeOpenaiFast()
 	case group.FieldRequireOauthOnly:
@@ -26373,6 +26457,10 @@ func (m *GroupMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldAllowLive(ctx)
 	case group.FieldForceOpenaiFast:
 		return m.OldForceOpenaiFast(ctx)
+	case group.FieldSessionSkillEnabled:
+		return m.OldSessionSkillEnabled(ctx)
+	case group.FieldSessionSkill:
+		return m.OldSessionSkill(ctx)
 	case group.FieldFreeOpenaiFast:
 		return m.OldFreeOpenaiFast(ctx)
 	case group.FieldRequireOauthOnly:
@@ -26773,6 +26861,20 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetForceOpenaiFast(v)
+		return nil
+	case group.FieldSessionSkillEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSessionSkillEnabled(v)
+		return nil
+	case group.FieldSessionSkill:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSessionSkill(v)
 		return nil
 	case group.FieldFreeOpenaiFast:
 		v, ok := value.(bool)
@@ -27538,6 +27640,12 @@ func (m *GroupMutation) ResetField(name string) error {
 		return nil
 	case group.FieldForceOpenaiFast:
 		m.ResetForceOpenaiFast()
+		return nil
+	case group.FieldSessionSkillEnabled:
+		m.ResetSessionSkillEnabled()
+		return nil
+	case group.FieldSessionSkill:
+		m.ResetSessionSkill()
 		return nil
 	case group.FieldFreeOpenaiFast:
 		m.ResetFreeOpenaiFast()
@@ -48721,6 +48829,7 @@ type UserMutation struct {
 	signup_source                 *string
 	last_login_at                 *time.Time
 	last_active_at                *time.Time
+	openai_priority               *bool
 	restrict_public_groups        *bool
 	balance_notify_enabled        *bool
 	balance_notify_threshold_type *string
@@ -49645,6 +49754,42 @@ func (m *UserMutation) LastActiveAtCleared() bool {
 func (m *UserMutation) ResetLastActiveAt() {
 	m.last_active_at = nil
 	delete(m.clearedFields, user.FieldLastActiveAt)
+}
+
+// SetOpenaiPriority sets the "openai_priority" field.
+func (m *UserMutation) SetOpenaiPriority(b bool) {
+	m.openai_priority = &b
+}
+
+// OpenaiPriority returns the value of the "openai_priority" field in the mutation.
+func (m *UserMutation) OpenaiPriority() (r bool, exists bool) {
+	v := m.openai_priority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOpenaiPriority returns the old "openai_priority" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldOpenaiPriority(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOpenaiPriority is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOpenaiPriority requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOpenaiPriority: %w", err)
+	}
+	return oldValue.OpenaiPriority, nil
+}
+
+// ResetOpenaiPriority resets all changes to the "openai_priority" field.
+func (m *UserMutation) ResetOpenaiPriority() {
+	m.openai_priority = nil
 }
 
 // SetRestrictPublicGroups sets the "restrict_public_groups" field.
@@ -50709,7 +50854,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 25)
+	fields := make([]string, 0, 26)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -50763,6 +50908,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.last_active_at != nil {
 		fields = append(fields, user.FieldLastActiveAt)
+	}
+	if m.openai_priority != nil {
+		fields = append(fields, user.FieldOpenaiPriority)
 	}
 	if m.restrict_public_groups != nil {
 		fields = append(fields, user.FieldRestrictPublicGroups)
@@ -50829,6 +50977,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.LastLoginAt()
 	case user.FieldLastActiveAt:
 		return m.LastActiveAt()
+	case user.FieldOpenaiPriority:
+		return m.OpenaiPriority()
 	case user.FieldRestrictPublicGroups:
 		return m.RestrictPublicGroups()
 	case user.FieldBalanceNotifyEnabled:
@@ -50888,6 +51038,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldLastLoginAt(ctx)
 	case user.FieldLastActiveAt:
 		return m.OldLastActiveAt(ctx)
+	case user.FieldOpenaiPriority:
+		return m.OldOpenaiPriority(ctx)
 	case user.FieldRestrictPublicGroups:
 		return m.OldRestrictPublicGroups(ctx)
 	case user.FieldBalanceNotifyEnabled:
@@ -51036,6 +51188,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastActiveAt(v)
+		return nil
+	case user.FieldOpenaiPriority:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOpenaiPriority(v)
 		return nil
 	case user.FieldRestrictPublicGroups:
 		v, ok := value.(bool)
@@ -51302,6 +51461,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldLastActiveAt:
 		m.ResetLastActiveAt()
+		return nil
+	case user.FieldOpenaiPriority:
+		m.ResetOpenaiPriority()
 		return nil
 	case user.FieldRestrictPublicGroups:
 		m.ResetRestrictPublicGroups()

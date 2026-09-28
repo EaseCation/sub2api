@@ -1,3 +1,4 @@
+import GroupSessionSkillFields from "@/components/admin/group/GroupSessionSkillFields.vue"
 import { defineComponent } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -322,6 +323,30 @@ describe('GroupsView duplicate action', () => {
 
     expect(updateGroup).toHaveBeenCalledTimes(1)
     expect(showError).toHaveBeenCalledWith('group name already exists')
+    wrapper.unmount()
+  })
+
+  it('loads session Skill, rejects an empty enabled Skill, and saves the edited instructions', async () => {
+    const group = { ...sourceGroup, session_skill_enabled: true, session_skill: 'Check Git first' }
+    listGroups.mockResolvedValue({ items: [group], total: 1, page: 1, page_size: 20, pages: 1 })
+    updateGroup.mockResolvedValue(group)
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.findAll('button').find(button => button.text() === 'common.edit')!.trigger('click')
+    await flushPromises()
+    const fields = wrapper.getComponent(GroupSessionSkillFields)
+    expect(fields.props('enabled')).toBe(true)
+    expect(fields.get('textarea').element.value).toBe('Check Git first')
+    await fields.get('textarea').setValue('   ')
+    await wrapper.get('#edit-group-form').trigger('submit')
+    expect(updateGroup).not.toHaveBeenCalled()
+    expect(showError).toHaveBeenCalledWith('admin.groups.sessionSkill.required')
+    await fields.get('textarea').setValue('Confirm purpose before continuing')
+    await wrapper.get('#edit-group-form').trigger('submit')
+    await flushPromises()
+    expect(updateGroup).toHaveBeenCalledWith(42, expect.objectContaining({
+      session_skill_enabled: true, session_skill: 'Confirm purpose before continuing'
+    }))
     wrapper.unmount()
   })
 
