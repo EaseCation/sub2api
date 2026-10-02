@@ -30,6 +30,29 @@ func TestLoadDefaultModelsListReadMaxBytes(t *testing.T) {
 	require.Equal(t, DefaultModelsListReadMaxBytes, cfg.Gateway.ModelsListReadMaxBytes)
 }
 
+func TestLoadForkAdmissionLimits(t *testing.T) {
+	t.Run("compatible defaults", func(t *testing.T) {
+		resetViperWithJWTSecret(t)
+		cfg, err := Load()
+		require.NoError(t, err)
+		require.Zero(t, cfg.APIKeyCreate.MaxActivePerUser)
+		require.Zero(t, cfg.APIKeyCreate.MaxPerUserPerHour)
+		require.False(t, cfg.Billing.InflightReservation.Enabled)
+	})
+
+	t.Run("explicit configuration enables limits", func(t *testing.T) {
+		resetViperWithJWTSecret(t)
+		configFile := filepath.Join(t.TempDir(), "config.yaml")
+		require.NoError(t, os.WriteFile(configFile, []byte("api_key_create:\n  max_active_per_user: 200\n  max_per_user_per_hour: 60\nbilling:\n  inflight_reservation:\n    enabled: true\n"), 0o600))
+		t.Setenv("CONFIG_FILE", configFile)
+		cfg, err := Load()
+		require.NoError(t, err)
+		require.Equal(t, 200, cfg.APIKeyCreate.MaxActivePerUser)
+		require.Equal(t, 60, cfg.APIKeyCreate.MaxPerUserPerHour)
+		require.True(t, cfg.Billing.InflightReservation.Enabled)
+	})
+}
+
 func TestLoadTimezonePrecedence(t *testing.T) {
 	tests := []struct {
 		name         string

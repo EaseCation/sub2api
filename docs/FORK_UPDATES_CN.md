@@ -8,11 +8,36 @@
 
 ## 当前开发分支同步记录
 
-2026-09-28 同步官方 [v0.2.9](https://github.com/Wei-Shaw/sub2api/releases/tag/v0.2.9)，合并提交为 `4c00df2e0183e2c70b7fa8ba45914205e36aad0c`。同步范围截至该发布标签，不包含标签之后的官方 main 改动。
+2026-10-01 同步官方 [v0.2.11](https://github.com/Wei-Shaw/sub2api/releases/tag/v0.2.11)，上游发布提交为 `96f4c115c9749078f90cbf210a01d39baf3f53b6`。同步范围截至该发布标签，不包含标签之后的官方 main 改动。此前 1.2.1 同步到官方 v0.2.9。
 
-同步前已完整撤回 OpenAI 可用账号低于阈值时关闭网关的封锁模式，包括后台设置、全局提示及相关配置。继续保留支付宝证书认证、本分支更新与官方版本展示、手动发布流程和镜像仓库配置；API 密钥多分组改动未恢复。
+保留支付宝证书认证、本分支更新与官方版本展示、分组 Session Skill、OpenAI 优先保障模式、手动发布流程和镜像仓库配置；API 密钥多分组及 OpenAI 全员封锁改动未恢复。
 
-此次仅同步代码，版本文件暂保留 `1.0.0`，不代表重新发布 1.0.0，也不会更新已发布镜像或服务器。后续正式发布必须选择未使用的新版本号。此次上游包含数据库迁移 `239_channel_reasoning_effort_multipliers.sql` 和 `240_affiliate_ledger_operation_id.sql`，部署前应备份数据库。
+## 1.3.0 发布范围（2026-10-01）
+
+- 合入官方 v0.2.10、v0.2.11，截至上游提交 `96f4c115c9749078f90cbf210a01d39baf3f53b6`。
+- 新增 GPT-6.1 Sol、Claude Sonnet 5.5 模型支持、Claude 原生限额重置查询与兑换、Codex 远程模型目录和最新 ChatGPT 套餐识别。
+- 新增风控用户白名单、仪表盘近期用量费用视图；修复复合分组 WebSocket 路由、流式用量统计、模型白名单映射、工具名称转换及 Claude Code 限制分组的兼容入口降级。
+- 合入 API Key 创建数量/频率限制与余额在途预占，但按本分支兼容策略默认关闭。显式配置仍可启用，示例见下方。
+- 继续保留本分支功能与 Linux amd64、arm64 手动发布配置，不新增自动部署。
+
+从 1.2.1 升级没有新增数据库迁移；从更早版本升级仍会执行既有迁移（包含本分支 241、242）。沿用现有 Compose、数据卷和 `.env`，固定版本镜像为 `junxuanb/sub2api:1.3.0`，仅重建 `sub2api` 服务。
+
+如需启用官方新增限制，在现有配置中设置并重启应用：
+
+```yaml
+api_key_create:
+  max_active_per_user: 200
+  max_per_user_per_hour: 60
+billing:
+  inflight_reservation:
+    enabled: true
+```
+
+两个创建限制设为 `0` 表示不限；`billing.inflight_reservation.enabled: false` 关闭余额并发预占。已有显式配置优先于本分支默认值。
+
+发布前验证：后端 `go test -tags unit ./...`、兼容默认值与显式配置测试、golangci-lint 2.13（0 issues）、Wire 生成一致性检查；pnpm 9 前端全量 Vitest（338 文件 / 2575 测试）、lint、类型检查及生产构建；发布工具 10 项测试和 Compose 安全、网关环境、简易模式、运行时资源检查均通过。
+
+依赖审计记录：govulncheck 未发现代码调用到已知漏洞；前端生产依赖审计仍有 9 项既有高危通告（Axios 7 项、SheetJS 2 项），不将此结果称为审计通过。当前前端使用浏览器 Axios，SheetJS 仅用于导出，未调用文件解析入口；依赖升级留待单独维护。
 
 ## 1.2.1 发布范围（2026-09-28）
 
