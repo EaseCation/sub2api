@@ -1686,11 +1686,35 @@ func normalizeCodexDelegationBootstrap(body []byte) ([]byte, bool) {
 	// 已有任务通过 send_message_to_thread 唤醒时会携带 previous_response_id；
 	// 完整历史回放还会带有已配对的调用项。delegation 仍是客户端注入的用户输入，
 	// 不属于这些历史调用的结果，因此允许它与可明确配对的历史上下文共存。
+	if !hasCodexFunctionCallOutputNamed(body, "create_thread", "send_message_to_thread") {
+		return body, false
+	}
 	return normalizeCodexCallOutputBootstrap(body, isCodexDelegationCandidate, true)
 }
 
 func normalizeCodexAutomationBootstrap(body []byte) ([]byte, bool) {
+	if !hasCodexFunctionCallOutputNamed(body, "automation_update") {
+		return body, false
+	}
 	return normalizeCodexCallOutputBootstrap(body, isCodexAutomationCandidate, false)
+}
+
+// hasCodexFunctionCallOutputNamed 是规范化前的廉价预检：只有 input 中存在指定名称的
+// function_call_output 时才进入完整的去重校验与 map 解码。后者对每个 /responses
+// 请求约产生 20 倍请求体大小的分配，大型 Codex 历史会话下会造成持续内存压力。
+// 预检只会多放行（重复键等由完整路径兜底拒绝），不会漏掉真正的候选项。
+func hasCodexFunctionCallOutputNamed(body []byte, names ...string) bool {
+	found := false
+	gjson.GetBytes(body, `input.#(type=="function_call_output")#.name`).ForEach(func(_, name gjson.Result) bool {
+		for _, candidate := range names {
+			if name.Type == gjson.String && name.Str == candidate {
+				found = true
+				return false
+			}
+		}
+		return true
+	})
+	return found
 }
 
 func normalizeCodexCallOutputBootstrap(body []byte, isCandidate func(map[string]any) bool, allowHistoricalContext bool) ([]byte, bool) {

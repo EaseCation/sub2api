@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 
@@ -181,4 +182,25 @@ func mustJSON(t *testing.T, value string) string {
 	encoded, err := json.Marshal(value)
 	require.NoError(t, err)
 	return string(encoded)
+}
+
+func TestNormalizeCodexBootstrapSkipsFullDecodeWithoutCandidate(t *testing.T) {
+	body := append([]byte(`{"model":"gpt-5","input":[{"type":"message","role":"user","content":"`), bytes.Repeat([]byte{'x'}, 4<<20)...)
+	body = append(body, `"},{"type":"function_call_output","call_id":"call_1","name":"other_tool","output":"ok"}]}`...)
+
+	allocs := testing.AllocsPerRun(5, func() {
+		out, changed := normalizeCodexAutomationBootstrap(body)
+		require.False(t, changed)
+		out, changed = normalizeCodexDelegationBootstrap(out)
+		require.False(t, changed)
+	})
+	require.LessOrEqual(t, allocs, float64(20))
+}
+
+func TestNormalizeCodexDelegationBootstrapPrefilterHandlesEscapes(t *testing.T) {
+	body := []byte(`{"model":"gpt-5","input":[{"type":"function\u005fcall_output","namespace":"codex_app","n\u0061me":"send_message\u005fto_thread","output":"` + delegationEnvelope + `"}]}`)
+
+	normalized, changed := normalizeCodexDelegationBootstrap(body)
+	require.True(t, changed)
+	require.Equal(t, "message", gjson.GetBytes(normalized, "input.0.type").String())
 }
