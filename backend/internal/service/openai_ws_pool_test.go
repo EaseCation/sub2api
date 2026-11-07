@@ -301,15 +301,29 @@ func TestOpenAIWSConnPool_AcquireQueueWaitMetrics(t *testing.T) {
 	}
 	ap.mu.Unlock()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	type acquireResult struct {
+		lease *openAIWSConnLease
+		err   error
+	}
+	resultCh := make(chan acquireResult, 1)
 	go func() {
-		time.Sleep(60 * time.Millisecond)
-		conn.release()
+		lease, err := pool.Acquire(ctx, openAIWSAcquireRequest{
+			Account: account,
+			WSURL:   "wss://example.com/v1/responses",
+		})
+		resultCh <- acquireResult{lease: lease, err: err}
 	}()
-
-	lease, err := pool.Acquire(context.Background(), openAIWSAcquireRequest{
-		Account: account,
-		WSURL:   "wss://example.com/v1/responses",
-	})
+	// Start the measured delay only after Acquire has entered the queue.
+	// CPU contention must not consume the delay before the waiter starts.
+	require.Eventually(t, func() bool {
+		return pool.SnapshotMetrics().AcquireQueueWaitTotal == 1
+	}, time.Second, time.Millisecond)
+	time.Sleep(60 * time.Millisecond)
+	conn.release()
+	got := <-resultCh
+	lease, err := got.lease, got.err
 	require.NoError(t, err)
 	require.NotNil(t, lease)
 	require.True(t, lease.Reused())

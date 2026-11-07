@@ -223,18 +223,18 @@ func (s *AccountTestService) startClaudeWindow(ctx context.Context, account *Acc
 	resp, err := s.httpUpstream.DoWithTLS(req, proxyURL, account.ID, account.Concurrency, s.tlsFPProfileService.ResolveTLSProfile(account))
 	if err != nil {
 		// Transport errors can contain proxy URLs with credentials.
-		return nil, fmt.Errorf("Claude window request failed; retry deferred")
+		return nil, fmt.Errorf("claude window request failed; retry deferred")
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
-		return resp.Header, fmt.Errorf("Claude window request returned HTTP %d", resp.StatusCode)
+		return resp.Header, fmt.Errorf("claude window request returned HTTP %d", resp.StatusCode)
 	}
 	var message struct {
 		ID   string `json:"id"`
 		Type string `json:"type"`
 	}
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&message); err != nil || message.Type != "message" || message.ID == "" {
-		return resp.Header, fmt.Errorf("Claude window request returned an invalid message")
+		return resp.Header, fmt.Errorf("claude window request returned an invalid message")
 	}
 	return resp.Header, nil
 }

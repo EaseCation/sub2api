@@ -585,7 +585,7 @@ const handleCreate = async () => {
       account_id: props.accountId,
       model_id: newPlan.model_id,
       mode: newPlan.claude_window ? 'claude_window' : 'connectivity',
-      cron_expression: newPlan.claude_window ? '* * * * *' : newPlan.cron_expression,
+      ...(!newPlan.claude_window ? { cron_expression: newPlan.cron_expression } : {}),
       enabled: newPlan.enabled,
       max_results: maxResults,
       auto_recover: !newPlan.claude_window && newPlan.auto_recover

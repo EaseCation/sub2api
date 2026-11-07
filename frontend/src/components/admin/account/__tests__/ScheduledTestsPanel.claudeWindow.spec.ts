@@ -48,6 +48,9 @@ describe('Claude window startup plans', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({
       account_id: 1, mode: 'claude_window', model_id: 'claude-sonnet-4-6', auto_recover: false,
     }))
+    // Older servers require cron and must reject this mode rather than run a
+    // regular connectivity test every minute when they ignore the mode field.
+    expect(create.mock.calls[0][0]).not.toHaveProperty('cron_expression')
   })
 
   it('hides the mode for unsupported accounts', async () => {

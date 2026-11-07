@@ -101,7 +101,7 @@ func (s *ScheduledTestService) validateMode(ctx context.Context, plan *Scheduled
 		}
 		// Setup tokens cannot query weekly usage, which must be known before sending.
 		if !supportsClaudeWindowStartup(account) {
-			return fmt.Errorf("Claude window startup requires an Anthropic OAuth account with usage access")
+			return fmt.Errorf("claude window startup requires an Anthropic OAuth account with usage access")
 		}
 		if plan.ModelID == "" {
 			return fmt.Errorf("a model is required for Claude window startup")
