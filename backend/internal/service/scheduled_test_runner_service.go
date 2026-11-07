@@ -14,11 +14,12 @@ const scheduledTestDefaultMaxWorkers = 10
 
 // ScheduledTestRunnerService periodically scans due test plans and executes them.
 type ScheduledTestRunnerService struct {
-	planRepo       ScheduledTestPlanRepository
-	scheduledSvc   *ScheduledTestService
-	accountTestSvc *AccountTestService
-	rateLimitSvc   *RateLimitService
-	cfg            *config.Config
+	planRepo        ScheduledTestPlanRepository
+	scheduledSvc    *ScheduledTestService
+	accountTestSvc  *AccountTestService
+	rateLimitSvc    *RateLimitService
+	cfg             *config.Config
+	accountUsageSvc *AccountUsageService
 
 	cron      *cron.Cron
 	startOnce sync.Once
@@ -32,13 +33,15 @@ func NewScheduledTestRunnerService(
 	accountTestSvc *AccountTestService,
 	rateLimitSvc *RateLimitService,
 	cfg *config.Config,
+	accountUsageSvc *AccountUsageService,
 ) *ScheduledTestRunnerService {
 	return &ScheduledTestRunnerService{
-		planRepo:       planRepo,
-		scheduledSvc:   scheduledSvc,
-		accountTestSvc: accountTestSvc,
-		rateLimitSvc:   rateLimitSvc,
-		cfg:            cfg,
+		planRepo:        planRepo,
+		scheduledSvc:    scheduledSvc,
+		accountTestSvc:  accountTestSvc,
+		rateLimitSvc:    rateLimitSvc,
+		cfg:             cfg,
+		accountUsageSvc: accountUsageSvc,
 	}
 }
 
@@ -120,6 +123,10 @@ func (s *ScheduledTestRunnerService) runScheduled() {
 }
 
 func (s *ScheduledTestRunnerService) runOnePlan(ctx context.Context, plan *ScheduledTestPlan) {
+	if plan.Mode == ScheduledTestModeClaudeWindow {
+		s.runClaudeWindowPlan(ctx, plan)
+		return
+	}
 	result, err := s.accountTestSvc.RunTestBackground(ctx, plan.AccountID, plan.ModelID)
 	if err != nil {
 		logger.LegacyPrintf("service.scheduled_test_runner", "[ScheduledTestRunner] plan=%d RunTestBackground error: %v", plan.ID, err)

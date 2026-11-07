@@ -1,0 +1,11 @@
+version: 1
+name: claude-window
+slug: claude-window
+protocol: http
+port: 4519
+interceptRequests: true
+origin: api.anthropic.com
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

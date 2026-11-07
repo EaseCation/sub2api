@@ -28,6 +28,13 @@
         <div class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
           {{ t('admin.scheduledTests.addPlan') }}
         </div>
+        <div v-if="allowClaudeWindow" class="mb-3">
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <Toggle v-model="newPlan.claude_window" />
+            {{ t('admin.scheduledTests.claudeWindow') }}
+          </label>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.scheduledTests.claudeWindowHelp') }}</p>
+        </div>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -40,7 +47,7 @@
               :searchable="modelOptions.length > 5"
             />
           </div>
-          <div>
+          <div v-if="!newPlan.claude_window">
             <label class="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
               {{ t('admin.scheduledTests.cronExpression') }}
               <HelpTooltip>
@@ -96,7 +103,7 @@
               {{ t('admin.scheduledTests.enabled') }}
             </label>
           </div>
-          <div class="flex items-end">
+          <div v-if="!newPlan.claude_window" class="flex items-end">
             <div>
               <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <Toggle v-model="newPlan.auto_recover" />
@@ -117,7 +124,7 @@
           </button>
           <button
             @click="handleCreate"
-            :disabled="!newPlan.model_id || !newPlan.cron_expression || creating"
+            :disabled="!newPlan.model_id || (!newPlan.claude_window && !newPlan.cron_expression) || creating"
             class="flex items-center gap-1.5 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Icon v-if="creating" name="refresh" size="sm" class="animate-spin" :stroke-width="2" />
@@ -162,7 +169,7 @@
                   {{ plan.model_id }}
                 </div>
                 <div class="mt-0.5 font-mono text-xs text-gray-500 dark:text-gray-400">
-                  {{ plan.cron_expression }}
+                  {{ plan.mode === 'claude_window' ? t('admin.scheduledTests.claudeWindow') : plan.cron_expression }}
                 </div>
               </div>
 
@@ -250,7 +257,7 @@
                   :searchable="modelOptions.length > 5"
                 />
               </div>
-              <div>
+              <div v-if="plan.mode !== 'claude_window'">
                 <label class="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
                   {{ t('admin.scheduledTests.cronExpression') }}
                   <HelpTooltip>
@@ -306,7 +313,7 @@
                   {{ t('admin.scheduledTests.enabled') }}
                 </label>
               </div>
-              <div class="flex items-end">
+              <div v-if="plan.mode !== 'claude_window'" class="flex items-end">
                 <div>
                   <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <Toggle v-model="editForm.auto_recover" />
@@ -374,7 +381,7 @@
                         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
                         result.status === 'success'
                           ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
-                          : result.status === 'running'
+                          : (result.status === 'running' || result.status === 'skipped')
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400'
                             : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
                       ]"
@@ -384,7 +391,9 @@
                           ? t('admin.scheduledTests.success')
                           : result.status === 'running'
                             ? t('admin.scheduledTests.running')
-                            : t('admin.scheduledTests.failed')
+                            : result.status === 'skipped'
+                              ? t('admin.scheduledTests.skipped')
+                              : t('admin.scheduledTests.failed')
                       }}
                     </span>
 
@@ -484,6 +493,7 @@ const props = defineProps<{
   show: boolean
   accountId: number | null
   modelOptions: SelectOption[]
+  allowClaudeWindow?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -519,6 +529,7 @@ const editForm = reactive({
 })
 
 const newPlan = reactive({
+  claude_window: false,
   model_id: '' as string,
   cron_expression: '' as string,
   max_results: '100' as string,
@@ -527,6 +538,7 @@ const newPlan = reactive({
 })
 
 const resetNewPlan = () => {
+  newPlan.claude_window = false
   newPlan.model_id = ''
   newPlan.cron_expression = ''
   newPlan.max_results = '100'
@@ -541,6 +553,7 @@ watch(
     if (visible && props.accountId) {
       await loadPlans()
     } else {
+      resetNewPlan()
       plans.value = []
       results.value = []
       expandedPlanId.value = null
@@ -564,17 +577,18 @@ const loadPlans = async () => {
 }
 
 const handleCreate = async () => {
-  if (!props.accountId || !newPlan.model_id || !newPlan.cron_expression) return
+  if (!props.accountId || !newPlan.model_id || (!newPlan.claude_window && !newPlan.cron_expression)) return
   creating.value = true
   try {
     const maxResults = Number(newPlan.max_results) || 100
     await adminAPI.scheduledTests.create({
       account_id: props.accountId,
       model_id: newPlan.model_id,
-      cron_expression: newPlan.cron_expression,
+      mode: newPlan.claude_window ? 'claude_window' : 'connectivity',
+      cron_expression: newPlan.claude_window ? '* * * * *' : newPlan.cron_expression,
       enabled: newPlan.enabled,
       max_results: maxResults,
-      auto_recover: newPlan.auto_recover
+      auto_recover: !newPlan.claude_window && newPlan.auto_recover
     })
     appStore.showSuccess(t('admin.scheduledTests.createSuccess'))
     showAddForm.value = false

@@ -1,0 +1,23 @@
+purpose:
+  stands_in_for: Anthropic Messages API, limited to the window startup request
+  unblocks: Local verification of short-message serialization and failure handling without using real quota
+assumptions:
+  - id: short-message-starts-idle-window
+    status: unknown
+    claim: A valid one-token response starts an idle five-hour session for the selected OAuth account and model.
+    reason: The official help documents first-message session startup, but provider acceptance of this minimal request has not been tested live.
+    verification: On 2026-11-07 the local simulation test passed for success, HTTP 429 and malformed HTTP 200 responses. The log recorded three POST requests with statuses 200, 429, 200. No real accounts or credentials used. Owner mock discovery was skipped because the installed CLI does not support the skill's status command.
+    source: https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work; backend/internal/service/claude_window_startup.go
+    updated_at: '2026-11-07'
+  - id: caller-minimal-request-and-failure-handling
+    status: supported
+    claim: In the three local scenarios run, the caller sent one message with max_tokens=1 and treated HTTP 429 and malformed success responses as failures.
+    reason: The mock rejects nonminimal requests with HTTP 400; the real caller passed the valid case and returned errors for the two failure cases.
+    verification: Ran TestClaudeWindowStartupSimulation against CLI 1.76.0 on 2026-11-07. All three cases passed, with corresponding requests recorded by the simulation. This only establishes behavior against the stand-in.
+    source: backend/internal/service/claude_window_startup_test.go; postman/mocks/claude-window/default.js; docs/CLAUDE_WINDOW_STARTUP_CN.md
+    updated_at: '2026-11-07'
+fingerprints:
+  - id: local-cli
+    date: '2026-11-07'
+    commit: null
+    cli: 1.76.0

@@ -1,0 +1,8 @@
+simulation: claude-window
+routing: path
+mocks:
+  - name: claude-window
+    routeKey: claude-window
+    origin:
+      - api.anthropic.com
+    path: postman/mocks/claude-window
