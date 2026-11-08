@@ -113,7 +113,7 @@ func TestRepositoryDiscoveryStopsScanningWhenModelDoesNotReport(t *testing.T) {
 }
 
 func TestRepositoryDiscoveryEligibilityAndWrappedFrames(t *testing.T) {
-	for _, name := range []string{"disabled", "other-client", "no-session", "explicit", "oversized", "no-tools", "tools-disabled", "malformed-instructions", "compaction"} {
+	for _, name := range []string{"disabled", "other-client", "no-session", "explicit", "oversized", "tools-disabled", "malformed-instructions", "compaction"} {
 		t.Run(name, func(t *testing.T) {
 			s := discoveryTestService()
 			c := discoveryTestContext(7, "session-a")
@@ -129,8 +129,6 @@ func TestRepositoryDiscoveryEligibilityAndWrappedFrames(t *testing.T) {
 				c.Request.Header.Set(UsageRepositoryHeader, "github.com/manual/repo")
 			case "oversized":
 				body = strings.Repeat("x", repositoryDiscoveryMaxBody+1)
-			case "no-tools":
-				body = `{"model":"gpt-5","input":"task"}`
 			case "tools-disabled":
 				body = strings.TrimSuffix(body, "}") + `,"tool_choice":"none"}`
 			case "malformed-instructions":
@@ -321,5 +319,25 @@ func BenchmarkRepositoryDiscoveryKnownSession(b *testing.B) {
 				_ = s.PrepareRepositoryDiscovery(c, body)
 			}
 		})
+	}
+}
+
+// Replays the metadata-only identity captured from Codex app-server 0.144.4.
+// Deferred tools are intentionally not matched by a hard-coded terminal name.
+func TestRepositoryDiscoveryDesktopMetadataAndDeferredTools(t *testing.T) {
+	for _, tools := range []string{`[]`, `[{"type":"tool_search","execution":"client"}]`} {
+		s := discoveryTestService()
+		c := discoveryTestContext(7, "")
+		c.Request.Header.Del("session_id")
+		c.Request.Header.Set("User-Agent", "codex_vscode/0.144.4 (Mac OS; arm64) dumb (Codex Desktop; 0.144.4)")
+		c.Request.Header.Set("X-Codex-Turn-Metadata", `{"thread_id":"desktop-thread","session_id":"desktop-thread","turn_id":"turn-1","window_id":"desktop-thread:0"}`)
+		body := []byte(`{"model":"gpt-5","instructions":"client rules","input":[{"role":"user","content":"task"}],"tools":` + tools + `}`)
+		next := s.PrepareRepositoryDiscovery(c, body)
+		require.Contains(t, gjson.GetBytes(next, "instructions").String(), "Sub2API repository attribution")
+		marker := discoveryTestMarker(s, 7, ExtractClientSessionID(c))
+		c.Request.Header.Set("X-Codex-Turn-Metadata", `{"thread_id":"desktop-thread","turn_id":"turn-2"}`)
+		s.PrepareRepositoryDiscovery(c, discoveryTestOutput(marker, "https://github.com/Owner/Project.git"))
+		require.Equal(t, "github.com/owner/project", *s.discoveredUsageRepository(7, ExtractClientSessionID(c)))
+		require.Equal(t, string(body), string(s.PrepareRepositoryDiscovery(c, body)))
 	}
 }

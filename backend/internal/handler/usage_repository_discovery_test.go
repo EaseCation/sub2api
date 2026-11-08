@@ -3,6 +3,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -53,8 +54,8 @@ func TestHTTPRepositoryDiscoveryReachesUpstreamOnlyOnce(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Request = httptest.NewRequest(http.MethodPost, "/openai/v1/responses", strings.NewReader(`{"model":"gpt-5.2","stream":false,"instructions":"keep client instructions","input":"task","tools":[{"type":"function","name":"exec_command","parameters":{"type":"object"}}]}`))
 		c.Request.Header.Set("Content-Type", "application/json")
-		c.Request.Header.Set("User-Agent", "codex_cli_rs/0.150.0")
-		c.Request.Header.Set("session_id", session)
+		c.Request.Header.Set("User-Agent", "Codex Desktop/0.144.4")
+		c.Request.Header.Set("X-Codex-Turn-Metadata", fmt.Sprintf(`{"thread_id":%q,"session_id":%q,"turn_id":"turn"}`, session, session))
 		c.Set(string(middleware.ContextKeyAPIKey), &service.APIKey{ID: 7, Key: "sk-client", GroupID: &groupID, User: &service.User{ID: 8, Status: service.StatusActive}, Group: &service.Group{ID: groupID, Platform: service.PlatformOpenAI, Status: service.StatusActive}})
 		c.Set(string(middleware.ContextKeyUser), middleware.AuthSubject{UserID: 8})
 		h.Responses(c)
