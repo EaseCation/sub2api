@@ -146,6 +146,7 @@ docs/*
 !docs/GROUP_SESSION_SKILL_CN.md
 !docs/OPENAI_PRIORITY_CN.md
 !docs/CLAUDE_WINDOW_STARTUP_CN.md
+!docs/REPOSITORY_USAGE_CN.md
 !docs/PLUGIN_DEVELOPMENT.md
 !docs/channel-monitor-v2-safe-defaults.md
 !docs/codex-credits.md

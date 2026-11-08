@@ -331,6 +331,16 @@ export default {
 
   // Usage
   usage: {
+    repositories: {
+      previous: 'Previous',
+      title: 'Spending by Repository',
+      hint: 'Uses the period and usage filters above. Includes attributed requests only, ordered by actual cost.',
+      cost: 'Standard cost',
+      actualCost: 'Actual cost',
+      empty: 'No repository usage for these filters. New Codex sessions try to identify the repository automatically; missing Git remotes, unavailable tools, or historical requests may remain unattributed.',
+      freshness: 'Reports are cached for up to 30 seconds. Choose a period of up to one year.',
+      loadFailed: 'Failed to load repository spending. Try a shorter period.',
+    },
     title: 'Usage Records',
     description: 'View and analyze your API usage history',
     costDetails: 'Cost Breakdown',

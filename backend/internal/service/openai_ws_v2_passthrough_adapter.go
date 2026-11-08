@@ -696,6 +696,7 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 		firstClientMessage = liteFirstMessage
 	}
 	originalFirstClientMessage := firstClientMessage
+	firstClientMessage = s.PrepareRepositoryDiscovery(c, firstClientMessage)
 	if next, skillErr := injectGroupSessionSkillWS(c, firstClientMessage); skillErr != nil {
 		return NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, skillErr.Error(), skillErr)
 	} else {
@@ -1037,6 +1038,7 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 					payload = litePayload
 				}
 				originalResponseCreate := payload
+				payload = s.PrepareRepositoryDiscovery(c, payload)
 				if next, skillErr := injectGroupSessionSkillWS(c, payload); skillErr != nil {
 					return payload, nil, NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, skillErr.Error(), skillErr)
 				} else {

@@ -262,6 +262,7 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 				nil,
 			)
 		}
+		normalized = s.PrepareRepositoryDiscovery(c, normalized)
 		if next, skillErr := injectGroupSessionSkillWS(c, normalized); skillErr != nil {
 			return openAIWSClientPayload{}, NewOpenAIWSClientCloseError(coderws.StatusPolicyViolation, skillErr.Error(), skillErr)
 		} else {

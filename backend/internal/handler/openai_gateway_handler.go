@@ -258,7 +258,7 @@ func usageRecordContext(parent context.Context, base context.Context) context.Co
 	if requestID, _ := parent.Value(ctxkey.RequestID).(string); strings.TrimSpace(requestID) != "" {
 		base = context.WithValue(base, ctxkey.RequestID, strings.TrimSpace(requestID))
 	}
-	return base
+	return service.CopyUsageRepositoryContext(parent, base)
 }
 
 // wrapUsageRecordTaskContext 包装计费任务：复制请求级 context 值，并接管请求的在途余额预留引用。
@@ -272,7 +272,7 @@ func wrapUsageRecordTaskContext(parent context.Context, task service.UsageRecord
 	if parent != nil {
 		done = service.InflightReservationFromContext(parent).Acquire()
 	}
-	// Snapshot only the IDs needed by billing. Retaining parent in a queued task
+	// Snapshot only the IDs needed by billing and repository attribution. Retaining parent in a queued task
 	// also retains the entire request context and any payloads attached to it.
 	metadata := usageRecordContext(parent, context.Background())
 	return func(ctx context.Context) {
@@ -642,6 +642,7 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		c.Request.Context(), c, sessionHashBody, reqModel,
 	))
 	requireCompact := legacyCompact
+	repositoryDiscoveryPrepared := false
 
 	maxAccountSwitches := h.maxAccountSwitches
 	switchCount := 0
@@ -805,6 +806,10 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		// 跨 passthrough 边界的 failover：从 Kiro 等透传账号切到 Bedrock 等非透传账号前，
 		// 从不可变的 canonical forwardBody 派生本次尝试 body 并整块剔除上游私有的加密
 		// reasoning item（含耦合的 id/summary），避免非透传上游 400 拒绝 Kiro reasoning 形态。
+		if !repositoryDiscoveryPrepared && !legacyCompact && !nativeV2 {
+			forwardBody = h.gatewayService.PrepareRepositoryDiscovery(c, forwardBody)
+			repositoryDiscoveryPrepared = true
+		}
 		attemptBody := h.deriveOpenAIForwardAttemptBody(reqLog, forwardBody, account, &passthroughFailoverState)
 		result, err := func() (*service.OpenAIForwardResult, error) {
 			defer func() {

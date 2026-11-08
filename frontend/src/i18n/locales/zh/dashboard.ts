@@ -336,6 +336,16 @@ export default {
 
   // Usage
   usage: {
+    repositories: {
+      previous: '上一页',
+      title: '按 Repository 查看费用',
+      hint: '沿用上方周期和用量筛选，仅统计已识别仓库的请求，按实际费用排序。',
+      cost: '标准费用',
+      actualCost: '实际费用',
+      empty: '所选条件下暂无仓库记录。Codex 新会话会尝试自动识别仓库；无 Git 仓库、工具不可用或历史请求可能没有归属。',
+      freshness: '统计最多缓存 30 秒；单次查询支持最长一年的周期。',
+      loadFailed: '仓库费用加载失败，请缩小周期后重试。',
+    },
     title: '使用记录',
     description: '查看和分析您的 API 使用历史',
     costDetails: '费用明细',

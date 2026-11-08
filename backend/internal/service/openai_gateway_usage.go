@@ -475,6 +475,13 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 
 	// 添加 SessionID（客户端显式会话标识；缺失/无效时保持 nil）
 	usageLog.SessionID = optionalTrimmedStringPtr(input.SessionID)
+	usageLog.Repository = UsageRepositoryFromContext(ctx)
+	if usageLog.Repository == nil {
+		usageLog.Repository = s.discoveredUsageRepository(apiKey.ID, input.SessionID)
+	}
+	// The log writer below waits for persistence. Register unresolved rows only
+	// afterwards, so a racing discovery can safely backfill them by request ID.
+	defer s.completeRepositoryDiscoveryUsage(usageLog)
 
 	if apiKey.GroupID != nil {
 		usageLog.GroupID = apiKey.GroupID
