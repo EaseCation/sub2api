@@ -17,7 +17,7 @@ import (
 )
 
 func TestRepositoryIndexMigrationExecution(t *testing.T) {
-	const filename = "250_usage_log_repository_index_notx.sql"
+	const filename = "253_usage_log_repository_index_notx.sql"
 	content, err := migrations.FS.ReadFile(filename)
 	require.NoError(t, err)
 	nonTx, err := validateMigrationExecutionMode(filename, string(content))

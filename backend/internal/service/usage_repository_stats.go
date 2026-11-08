@@ -128,6 +128,10 @@ func (s *UsageService) GetRepositoryStats(ctx context.Context, start, end time.T
 		if value.Err != nil {
 			return nil, value.Err
 		}
-		return value.Val.(*usagestats.RepositoryStatsPage), nil
+		page, ok := value.Val.(*usagestats.RepositoryStatsPage)
+		if !ok || page == nil {
+			return nil, infraerrors.New(http.StatusInternalServerError, "REPOSITORY_STATS_INVALID", "Invalid repository statistics result")
+		}
+		return page, nil
 	}
 }

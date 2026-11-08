@@ -47,7 +47,7 @@ func (r *usageLogRepository) GetRepositoryStats(ctx context.Context, start, end 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	results := make([]usagestats.RepositoryStat, 0)
 	for rows.Next() {
 		var row usagestats.RepositoryStat

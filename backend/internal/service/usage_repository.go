@@ -40,7 +40,9 @@ func NormalizeUsageRepository(raw string) string {
 		return ""
 	}
 	host := strings.ToLower(u.Hostname())
-	if port := u.Port(); port != "" && !((u.Scheme == "https" && port == "443") || (u.Scheme == "http" && port == "80") || (u.Scheme == "ssh" && port == "22")) {
+	port := u.Port()
+	defaultPort := (u.Scheme == "https" && port == "443") || (u.Scheme == "http" && port == "80") || (u.Scheme == "ssh" && port == "22")
+	if port != "" && !defaultPort {
 		host += ":" + port
 	}
 	path := strings.TrimSuffix(strings.Trim(u.Path, "/"), ".git")
@@ -61,7 +63,8 @@ func NormalizeUsageRepository(raw string) string {
 		return ""
 	}
 	for _, c := range identity {
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("-._/:", c)) {
+		valid := c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("-._/:", c)
+		if !valid {
 			return ""
 		}
 	}

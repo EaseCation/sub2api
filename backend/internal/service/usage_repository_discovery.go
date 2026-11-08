@@ -64,10 +64,17 @@ func (c *repositoryDiscoveryCache) createLocked(key repositoryDiscoveryKey, secr
 	// each cold request even after a long idle period.
 	for n := 0; n < 32; n++ {
 		front := c.order.Front()
-		if front == nil || now.Before(front.Value.(*repositoryDiscoveryEntry).expiresAt) {
+		if front == nil {
 			break
 		}
-		e := front.Value.(*repositoryDiscoveryEntry)
+		e, ok := front.Value.(*repositoryDiscoveryEntry)
+		if !ok || e == nil {
+			c.order.Remove(front)
+			continue
+		}
+		if now.Before(e.expiresAt) {
+			break
+		}
 		if c.items[e.key] == e {
 			delete(c.items, e.key)
 		}
