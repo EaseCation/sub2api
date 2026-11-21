@@ -191,7 +191,7 @@ func TestNormalizeCodexBootstrapSkipsFullDecodeWithoutCandidate(t *testing.T) {
 	allocs := testing.AllocsPerRun(5, func() {
 		out, changed := normalizeCodexAutomationBootstrap(body)
 		require.False(t, changed)
-		out, changed = normalizeCodexDelegationBootstrap(out)
+		_, changed = normalizeCodexDelegationBootstrap(out)
 		require.False(t, changed)
 	})
 	require.LessOrEqual(t, allocs, float64(20))

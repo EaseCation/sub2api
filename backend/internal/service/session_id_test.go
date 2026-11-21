@@ -153,3 +153,22 @@ func TestExtractClientSessionID_InjectionHeaderDropped(t *testing.T) {
 	c.Request.Header.Set("session_id", "abc\r\nX-Injected: 1")
 	require.Equal(t, "", ExtractClientSessionID(c))
 }
+
+func TestExtractClientSessionID_CodexDesktopTurnMetadata(t *testing.T) {
+	for _, tc := range []struct{ name, metadata, want string }{
+		{"thread", `{"thread_id":"thread-a","session_id":"session-a","turn_id":"turn-1"}`, "thread-a"},
+		{"legacy metadata", `{"session_id":"session-a","turn_id":"turn-2"}`, "session-a"},
+		{"no turn fallback", `{"turn_id":"turn-1","window_id":"window-1"}`, ""},
+		{"invalid json", `{"thread_id":"thread-a"`, ""},
+		{"invalid value", `{"thread_id":123}`, ""},
+		{"control injection", `{"thread_id":"thread\nspoofed"}`, ""},
+		{"oversized", `{"thread_id":"thread-a","padding":"` + strings.Repeat("x", 4096) + `"}`, ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := newSessionHeaderContext(t, map[string]string{"User-Agent": "Codex Desktop/0.144.4", "X-Codex-Turn-Metadata": tc.metadata})
+			require.Equal(t, tc.want, ExtractClientSessionID(c))
+			c.Request.Header.Set("session_id", "explicit")
+			require.Equal(t, "explicit", ExtractClientSessionID(c))
+		})
+	}
+}

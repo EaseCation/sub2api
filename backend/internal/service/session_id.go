@@ -4,7 +4,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
 	"github.com/gin-gonic/gin"
+	"github.com/tidwall/gjson"
 )
 
 // maxPersistedSessionIDLength bounds the persisted client session identifier to the
@@ -47,6 +49,23 @@ func ExtractClientSessionID(c *gin.Context) string {
 	for _, header := range clientSessionIDHeaders {
 		if sessionID := sanitizeSessionID(c.GetHeader(header)); sessionID != "" {
 			return sessionID
+		}
+	}
+	// Current Codex clients send the stable thread/session identifier inside
+	// this hyphenated metadata header instead of the legacy session_id header.
+	// This is usage correlation only; sticky routing keeps its own resolution.
+	if openai.IsCodexOfficialClientByHeaders(c.GetHeader("User-Agent"), c.GetHeader("originator")) {
+		metadata := c.GetHeader("X-Codex-Turn-Metadata")
+		if len(metadata) <= 4096 && gjson.Valid(metadata) {
+			view := gjson.Parse(metadata)
+			for _, field := range []string{"thread_id", "session_id"} {
+				value := view.Get(field)
+				if value.Type == gjson.String {
+					if sessionID := sanitizeSessionID(value.String()); sessionID != "" {
+						return sessionID
+					}
+				}
+			}
 		}
 	}
 	if isGrokRequestContext(c) {
