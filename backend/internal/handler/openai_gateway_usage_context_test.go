@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/ctxkey"
+	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,9 +29,11 @@ func TestQueuedUsageTaskSnapshotsMetadataBeforeRequestRelease(t *testing.T) {
 		ctxkey.RequestID, " request-456 ",
 	))
 	defer cancel()
+	parent = service.WithUsageRepository(parent, "git@github.com:owner/repo.git")
 	request := &releasedUsageRequestContext{Context: parent}
 	task, abandon := wrapUsageRecordTaskContext(request, func(ctx context.Context) {
 		require.Equal(t, "client-123", ctx.Value(ctxkey.ClientRequestID))
+		require.Equal(t, "github.com/owner/repo", *service.UsageRepositoryFromContext(ctx))
 		require.Equal(t, "request-456", ctx.Value(ctxkey.RequestID))
 		require.NoError(t, ctx.Err(), "request cancellation must not cancel billing")
 		_, ok := ctx.Deadline()

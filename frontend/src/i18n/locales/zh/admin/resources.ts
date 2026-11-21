@@ -1,5 +1,8 @@
 export default {
     scheduledTests: {
+      claudeWindow: 'Claude 5 小时窗口预启动',
+      claudeWindowHelp: '仅适用于 Claude OAuth 账号。窗口到期且周额度仍有剩余时发送一条“.”，最多生成 1 token；窗口内不重复发送，周额度耗尽时等待恢复。额度无法确认时跳过，失败后延迟重试。不会增加额度或解除限制。',
+      skipped: '已跳过',
       title: '定时测试',
       addPlan: '添加计划',
       editPlan: '编辑计划',

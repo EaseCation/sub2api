@@ -2511,6 +2511,7 @@ export interface TotpLogin2FARequest {
 // ==================== Scheduled Test Types ====================
 
 export interface ScheduledTestPlan {
+  mode?: 'connectivity' | 'claude_window'
   id: number
   account_id: number
   model_id: string
@@ -2537,9 +2538,10 @@ export interface ScheduledTestResult {
 }
 
 export interface CreateScheduledTestPlanRequest {
+  mode?: 'connectivity' | 'claude_window'
   account_id: number
   model_id: string
-  cron_expression: string
+  cron_expression?: string
   enabled?: boolean
   max_results?: number
   auto_recover?: boolean
