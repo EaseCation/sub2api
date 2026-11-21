@@ -14,7 +14,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 )
 
-const apiKeyAuthSnapshotVersion = 28 // v28: fork OpenAI priority, group privacy gate and RPM override scope
+const apiKeyAuthSnapshotVersion = 29 // v29: fork priority/session skill and upstream force_openai_ultrafast
 
 type apiKeyAuthCacheConfig struct {
 	l1Size        int
@@ -422,6 +422,7 @@ func (s *APIKeyService) snapshotFromAPIKey(ctx context.Context, apiKey *APIKey) 
 			AllowMessagesDispatch:           apiKey.Group.AllowMessagesDispatch,
 			AllowLive:                       apiKey.Group.AllowLive,
 			ForceOpenAIFast:                 apiKey.Group.ForceOpenAIFast,
+			ForceOpenAIUltrafast:            apiKey.Group.ForceOpenAIUltrafast,
 			FreeOpenAIFast:                  apiKey.Group.FreeOpenAIFast,
 			SessionSkillEnabled:             apiKey.Group.SessionSkillEnabled,
 			SessionSkill:                    apiKey.Group.SessionSkill,
@@ -530,6 +531,7 @@ func (s *APIKeyService) snapshotToAPIKey(key string, snapshot *APIKeyAuthSnapsho
 			AllowMessagesDispatch:           snapshot.Group.AllowMessagesDispatch,
 			AllowLive:                       snapshot.Group.AllowLive,
 			ForceOpenAIFast:                 snapshot.Group.ForceOpenAIFast,
+			ForceOpenAIUltrafast:            snapshot.Group.ForceOpenAIUltrafast,
 			FreeOpenAIFast:                  snapshot.Group.FreeOpenAIFast,
 			SessionSkillEnabled:             snapshot.Group.SessionSkillEnabled,
 			SessionSkill:                    snapshot.Group.SessionSkill,

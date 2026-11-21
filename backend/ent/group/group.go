@@ -128,6 +128,8 @@ const (
 	FieldSessionSkillEnabled = "session_skill_enabled"
 	// FieldSessionSkill holds the string denoting the session_skill field in the database.
 	FieldSessionSkill = "session_skill"
+	// FieldForceOpenaiUltrafast holds the string denoting the force_openai_ultrafast field in the database.
+	FieldForceOpenaiUltrafast = "force_openai_ultrafast"
 	// FieldFreeOpenaiFast holds the string denoting the free_openai_fast field in the database.
 	FieldFreeOpenaiFast = "free_openai_fast"
 	// FieldRequireOauthOnly holds the string denoting the require_oauth_only field in the database.
@@ -287,6 +289,7 @@ var Columns = []string{
 	FieldForceOpenaiFast,
 	FieldSessionSkillEnabled,
 	FieldSessionSkill,
+	FieldForceOpenaiUltrafast,
 	FieldFreeOpenaiFast,
 	FieldRequireOauthOnly,
 	FieldRequirePrivacySet,
@@ -420,6 +423,8 @@ var (
 	DefaultSessionSkillEnabled bool
 	// DefaultSessionSkill holds the default value on creation for the "session_skill" field.
 	DefaultSessionSkill string
+	// DefaultForceOpenaiUltrafast holds the default value on creation for the "force_openai_ultrafast" field.
+	DefaultForceOpenaiUltrafast bool
 	// DefaultFreeOpenaiFast holds the default value on creation for the "free_openai_fast" field.
 	DefaultFreeOpenaiFast bool
 	// DefaultRequireOauthOnly holds the default value on creation for the "require_oauth_only" field.
@@ -717,6 +722,11 @@ func BySessionSkillEnabled(opts ...sql.OrderTermOption) OrderOption {
 // BySessionSkill orders the results by the session_skill field.
 func BySessionSkill(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSessionSkill, opts...).ToFunc()
+}
+
+// ByForceOpenaiUltrafast orders the results by the force_openai_ultrafast field.
+func ByForceOpenaiUltrafast(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForceOpenaiUltrafast, opts...).ToFunc()
 }
 
 // ByFreeOpenaiFast orders the results by the free_openai_fast field.

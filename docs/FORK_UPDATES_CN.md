@@ -8,9 +8,13 @@
 
 ## 当前开发分支同步记录
 
-2026-11-07 同步官方最新 main `6b4b37db43443b5e88e424fe3c69602cc3810dfb`（官方 v0.2.20），本分支合并提交为 `fa046e447`。该次同步完整 main，截至该提交，并发布为独立版本 1.5.0；当前功能版本为 1.6.0。
+2026-11-21 同步官方最新 main `328db26f450edbdf9f8d4344a3ea903ac6396842`（官方版本 0.2.24），包含此前未合入的 v0.2.21–v0.2.24 更新。同时整合 origin/main 的仓库统计及 Codex 桌面会话识别修复。本次仅同步开发代码，保留本分支版本 1.6.1，未触发发布。
 
-保留支付宝证书认证、本分支更新与官方版本展示、分组 Session Skill、OpenAI 优先保障模式和仅手动发布的 Linux amd64/arm64 配置。鉴权缓存版本升级到 28，同时保留优先保障字段与官方新增的分组隐私、RPM override 范围信息。
+更新包含 OpenAI Ultrafast 分组与定价、缓存写入 TTL 统计、模型目录和平台兼容更新，以及流式失败切换、图片处理、请求字段歧义校验和内存分配优化。保留支付宝证书认证、本分支更新与官方版本展示、分组 Session Skill、OpenAI 优先保障模式、仓库费用统计和 Claude 窗口预启动；GitHub Actions 仍仅手动发布 Linux amd64/arm64。鉴权缓存版本升级到 29，合并双方新增字段。
+
+新增官方迁移 `249_add_usage_logs_api_key_cost_index_notx.sql`、`250_openai_cache_write_ttl.sql`、`251_group_force_openai_ultrafast.sql`、`251_group_usage_rollup_nonblocking_build.sql`、`252_channel_pricing_ultrafast_multiplier.sql`。保留本分支现有迁移文件名与内容，迁移器按完整文件名跟踪。部署前备份数据库与配置。
+
+本次验证通过：Go 1.27.4 后端 `go test -tags unit ./...`；重新生成 Ent / Wire；pnpm 9 前端全量 Vitest（393 文件 / 3208 测试）、ESLint、类型检查与生产构建；Compose 安全、网关环境、简易模式和运行时资源检查；发布工具 10 项测试及 `git diff --check`。路由断言已适配合并后的中间件顺序；新增的 thinking 历史内存分配检查沿用独立进程测试方式，保持原阈值。
 
 ## 1.6.1 发布范围（2026-11-07）
 
