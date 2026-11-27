@@ -10,12 +10,26 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	_ "time/tzdata" // Keep the Toronto schedule available in standalone binaries.
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/claude"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 )
 
 const claudeWindowRetryDelay = 10 * time.Minute
+
+// The named zone is included in the embedded IANA database.
+var claudeWindowToronto, _ = time.LoadLocation("America/Toronto")
+
+// A 09:30 first window puts the fourth window near 00:30 on a typical day.
+func nextClaudeWindowAttempt(due time.Time) time.Time {
+	local := due.In(claudeWindowToronto)
+	morning := time.Date(local.Year(), local.Month(), local.Day(), 9, 30, 0, 0, claudeWindowToronto)
+	if local.Hour() >= 1 && local.Before(morning) {
+		return morning
+	}
+	return due
+}
 
 func (r *ClaudeUsageResponse) UnmarshalJSON(data []byte) error {
 	type plain ClaudeUsageResponse
@@ -117,9 +131,14 @@ func (s *ScheduledTestRunnerService) executeClaudeWindowPlan(ctx context.Context
 	result = &ScheduledTestResult{Status: "skipped", StartedAt: now}
 	next = now.Add(claudeWindowRetryDelay)
 	defer func() {
+		next = nextClaudeWindowAttempt(next)
 		result.FinishedAt = time.Now()
 		result.LatencyMs = result.FinishedAt.Sub(now).Milliseconds()
 	}()
+	if morning := nextClaudeWindowAttempt(now); morning.After(now) {
+		next, result.ResponseText = morning, "Waiting for 09:30 Toronto time"
+		return
+	}
 	account, err := s.accountTestSvc.accountRepo.GetByID(ctx, plan.AccountID)
 	if err != nil || !supportsClaudeWindowStartup(account) || !account.IsSchedulable() {
 		result.ResponseText = "Account is unavailable or paused; no message sent"
@@ -215,7 +234,7 @@ func (s *AccountTestService) startClaudeWindow(ctx context.Context, account *Acc
 	req.Header.Set("anthropic-version", "2023-06-01")
 	req.Header.Set("anthropic-beta", claude.DefaultBetaHeader)
 	req.Header.Set("Authorization", "Bearer "+account.GetCredential("access_token"))
-	account.ApplyHeaderOverrides(req.Header)
+	account.ApplyHeaderOverrides(ctx, req.Header)
 	proxyURL := ""
 	if account.ProxyID != nil && account.Proxy != nil {
 		proxyURL = account.Proxy.URL()

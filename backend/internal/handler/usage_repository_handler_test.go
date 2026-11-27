@@ -31,7 +31,7 @@ func TestUserRepositoryStatsScopeDatesAndKeyOwnership(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &repositoryUsageHandlerRepo{}
 	keys := &dailyUsageAPIKeyRepoStub{keys: map[int64]*service.APIKey{7: {ID: 7, UserID: 99}, 8: {ID: 8, UserID: 42}}}
-	h := NewUsageHandler(service.NewUsageService(repo, nil, nil, nil), service.NewAPIKeyService(keys, nil, nil, nil, nil, nil, nil), nil, nil)
+	h := NewUsageHandler(service.NewUsageService(repo, nil, nil, nil), service.NewAPIKeyService(keys, nil, nil, nil, nil, nil, nil), nil, nil, nil)
 	router := gin.New()
 	router.Use(func(c *gin.Context) {
 		c.Set(string(middleware2.ContextKeyUser), middleware2.AuthSubject{UserID: 42})

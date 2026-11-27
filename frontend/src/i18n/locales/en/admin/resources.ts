@@ -1,7 +1,7 @@
 export default {
     scheduledTests: {
       claudeWindow: 'Claude 5-hour window startup',
-      claudeWindowHelp: 'For Claude OAuth accounts only. Sends one “.” with at most 1 output token when the window expires and weekly quota remains. Active windows are skipped; exhausted weekly quota waits for reset. Unknown usage is skipped and failures are retried later. This does not increase quota or remove limits.',
+      claudeWindowHelp: 'Pre-starts windows from 09:30 to 01:00 Toronto time (DST observed). For Claude OAuth accounts only. Sends one “.” with at most 1 output token when the window expires and weekly quota remains. Active windows are skipped; exhausted weekly quota waits for reset. Unknown usage is skipped and failures are retried later. This does not increase quota or remove limits.',
       skipped: 'Skipped',
       title: 'Scheduled Tests',
       addPlan: 'Add Plan',

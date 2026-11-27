@@ -13,9 +13,9 @@ assumptions:
     status: supported
     claim: In the three local scenarios run, the caller sent one message with max_tokens=1 and treated HTTP 429 and malformed success responses as failures.
     reason: The mock rejects nonminimal requests with HTTP 400; the real caller passed the valid case and returned errors for the two failure cases.
-    verification: Ran TestClaudeWindowStartupSimulation against CLI 1.76.0 on 2026-11-07. All three cases passed, with corresponding requests recorded by the simulation. This only establishes behavior against the stand-in.
+    verification: Ran TestClaudeWindowStartupSimulation against CLI 1.76.0 on 2026-11-07. All three cases passed, with corresponding requests recorded by the simulation. The Toronto scheduling update passed the same three scenarios on 2026-11-27 (HTTP 200, 429 and malformed 200). This only establishes behavior against the stand-in.
     source: backend/internal/service/claude_window_startup_test.go; postman/mocks/claude-window/default.js; docs/CLAUDE_WINDOW_STARTUP_CN.md
-    updated_at: '2026-11-07'
+    updated_at: '2026-11-27'
 fingerprints:
   - id: local-cli
     date: '2026-11-07'

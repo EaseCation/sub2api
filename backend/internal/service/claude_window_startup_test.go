@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/tlsfingerprint"
@@ -119,7 +120,7 @@ func windowTestRunner(now time.Time, upstream HTTPUpstream) (*ScheduledTestRunne
 func TestClaudeWindowStartupQuotaAndBackoff(t *testing.T) {
 	for _, name := range []string{"idle", "expired", "active", "recorded active", "five-hour missing", "invalid reset", "weekly exhausted", "sonnet exhausted", "weekly missing", "weekly stale", "usage failure", "paused", "setup token", "rate limited", "invalid response"} {
 		t.Run(name, func(t *testing.T) {
-			now := time.Now().Truncate(time.Second)
+			now := time.Date(2026, 7, 1, 16, 0, 0, 0, time.UTC)
 			reset := now.Add(4 * time.Hour)
 			calls := 0
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -199,28 +200,57 @@ func TestClaudeWindowStartupQuotaAndBackoff(t *testing.T) {
 	}
 }
 
+func TestClaudeWindowTorontoSchedule(t *testing.T) {
+	for _, tc := range []struct{ now, next string }{
+		{"2026-01-12T00:59:59-05:00", ""},
+		{"2026-01-12T01:00:00-05:00", "2026-01-12T09:30:00-05:00"},
+		{"2026-07-12T09:29:59-04:00", "2026-07-12T09:30:00-04:00"},
+		{"2026-07-12T09:30:00-04:00", ""},
+		{"2026-07-12T19:30:00-04:00", ""},
+		{"2026-03-08T01:00:00-05:00", "2026-03-08T09:30:00-04:00"},
+		{"2026-11-01T01:00:00-04:00", "2026-11-01T09:30:00-05:00"},
+		{"2026-11-01T01:00:00-05:00", "2026-11-01T09:30:00-05:00"},
+	} {
+		t.Run(tc.now, func(t *testing.T) {
+			now, err := time.Parse(time.RFC3339, tc.now)
+			require.NoError(t, err)
+			if tc.next == "" {
+				require.Equal(t, now.UTC(), nextClaudeWindowAttempt(now.UTC()))
+				return
+			}
+			// No account lookup, usage query or message should run overnight.
+			runner := &ScheduledTestRunnerService{}
+			result, next := runner.executeClaudeWindowPlan(context.Background(), &ScheduledTestPlan{}, now.UTC())
+			require.Equal(t, "skipped", result.Status)
+			require.Equal(t, tc.next, next.Format(time.RFC3339))
+		})
+	}
+}
+
 func TestClaudeWindowStartupClaimAndPersistedDeadline(t *testing.T) {
-	now := time.Now()
-	upstream := &queuedHTTPUpstream{responses: []*http.Response{newJSONResponse(200, `{"type":"message","id":"msg_test"}`)}}
-	runner, _, _ := windowTestRunner(now, upstream)
-	plan := &ScheduledTestPlan{ID: 1, AccountID: 1, Mode: ScheduledTestModeClaudeWindow, ModelID: "claude-sonnet-4-6", Enabled: true, MaxResults: 50, NextRunAt: &now}
-	planRepo, resultRepo := &windowPlanRepo{plan: plan}, &windowResultRepo{}
-	runner.planRepo = planRepo
-	runner.scheduledSvc = NewScheduledTestService(planRepo, resultRepo, runner.accountTestSvc.accountRepo)
-	snapshot := *plan
-	runner.runOnePlan(context.Background(), &snapshot)
-	runner.runOnePlan(context.Background(), &snapshot) // stale ListDue snapshot / another instance
-	require.Len(t, upstream.requests, 1)
-	require.Len(t, resultRepo.results, 1)
-	require.True(t, planRepo.plan.NextRunAt.After(now.Add(5*time.Hour)))
-	// Changing settings must not reopen an already started window.
-	deadline := *planRepo.plan.NextRunAt
-	_, err := runner.scheduledSvc.UpdatePlan(context.Background(), planRepo.plan)
-	require.NoError(t, err)
-	require.Equal(t, deadline, *planRepo.plan.NextRunAt)
-	planRepo.plan.Enabled = false
-	runner.runOnePlan(context.Background(), &snapshot)
-	require.Len(t, upstream.requests, 1)
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
+		upstream := &queuedHTTPUpstream{responses: []*http.Response{newJSONResponse(200, `{"type":"message","id":"msg_test"}`)}}
+		runner, _, _ := windowTestRunner(now, upstream)
+		plan := &ScheduledTestPlan{ID: 1, AccountID: 1, Mode: ScheduledTestModeClaudeWindow, ModelID: "claude-sonnet-4-6", Enabled: true, MaxResults: 50, NextRunAt: &now}
+		planRepo, resultRepo := &windowPlanRepo{plan: plan}, &windowResultRepo{}
+		runner.planRepo = planRepo
+		runner.scheduledSvc = NewScheduledTestService(planRepo, resultRepo, runner.accountTestSvc.accountRepo)
+		snapshot := *plan
+		runner.runOnePlan(context.Background(), &snapshot)
+		runner.runOnePlan(context.Background(), &snapshot) // stale ListDue snapshot / another instance
+		require.Len(t, upstream.requests, 1)
+		require.Len(t, resultRepo.results, 1)
+		require.True(t, planRepo.plan.NextRunAt.After(now.Add(5*time.Hour)))
+		// Changing settings must not reopen an already started window.
+		deadline := *planRepo.plan.NextRunAt
+		_, err := runner.scheduledSvc.UpdatePlan(context.Background(), planRepo.plan)
+		require.NoError(t, err)
+		require.Equal(t, deadline, *planRepo.plan.NextRunAt)
+		planRepo.plan.Enabled = false
+		runner.runOnePlan(context.Background(), &snapshot)
+		require.Len(t, upstream.requests, 1)
+	})
 }
 
 func TestClaudeWindowStartupModeValidation(t *testing.T) {
